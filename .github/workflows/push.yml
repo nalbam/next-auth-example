@@ -71,8 +71,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: "${{ env.IMAGE_URI }}:${{ steps.bump.outputs.version }}"
+          tags: "${{ env.IMAGE_URI }}:latest"
           platforms: ${{ env.PLATFORM }}
+          outputs: type=docker  # Lambda가 지원하는 Docker Image Manifest V2 형식 강제 적용
 
       - name: Set up environment variables 📝
         run: |
@@ -82,5 +83,5 @@ jobs:
           echo "AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}" >> .env
           echo "AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}" >> .env
 
-      - name: Deploy to AWS Lambda 🚀
-        run: npx serverless deploy --region ${{ env.AWS_REGION }}
+      # - name: Deploy to AWS Lambda 🚀
+      #   run: npx serverless deploy --region ${{ env.AWS_REGION }}
