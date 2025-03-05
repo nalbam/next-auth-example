@@ -2,18 +2,19 @@
 
 ## 1. 애플리케이션 개요
 
-이 애플리케이션은 Next.js와 NextAuth.js를 사용한 인증 예제 애플리케이션입니다. Express 서버를 통해 Next.js 애플리케이션을 제공하며, 다양한 인증 방식과 보호된 라우트 예제를 포함하고 있습니다. 이 프로젝트는 Next.js의 App Router를 사용하여 구현되었으며, 서버 컴포넌트와 클라이언트 컴포넌트를 모두 활용합니다.
+이 애플리케이션은 Next.js와 NextAuth.js(Auth.js)를 사용한 인증 예제 애플리케이션입니다. Express 서버를 통해 Next.js 애플리케이션을 제공하며, 다양한 인증 방식과 보호된 라우트 예제를 포함하고 있습니다. 이 프로젝트는 Next.js의 App Router를 사용하여 구현되었으며, 서버 컴포넌트와 클라이언트 컴포넌트를 모두 활용합니다. AWS Lambda와 Docker를 통한 서버리스 배포를 지원합니다.
 
 ### 주요 기능
 
-- 다양한 OAuth 제공자를 통한 인증 (GitHub, Google, Facebook 등)
+- 다양한 OAuth 제공자를 통한 인증 (GitHub, Google, Facebook, Twitter 등)
 - JWT 기반 세션 관리
-- 서버 컴포넌트에서의 인증 상태 접근
-- 클라이언트 컴포넌트에서의 인증 상태 접근
+- 서버 컴포넌트에서의 인증 상태 접근 (`auth()` 함수 사용)
+- 클라이언트 컴포넌트에서의 인증 상태 접근 (`useSession()` 훅 사용)
 - 미들웨어를 통한 라우트 보호
 - API 라우트 보호
 - WebAuthn 지원 (실험적 기능)
 - Unstorage 어댑터를 통한 세션 저장소 지원 (메모리 또는 Vercel KV)
+- Tailwind CSS와 Radix UI를 활용한 모던 UI 컴포넌트
 
 ## 2. 프로젝트 구조
 
@@ -21,13 +22,14 @@
 next-auth-example/
 ├── app/                    # Next.js 13+ App Router 구조
 │   ├── api/                # API 라우트
-│   │   └── protected/      # 보호된 API 라우트
+│   │   └── protected/      # 보호된 API 라우트 (인증 필요)
 │   ├── auth/               # 인증 관련 라우트
 │   │   └── [...nextauth]/  # NextAuth.js 동적 라우트
 │   ├── client-example/     # 클라이언트 컴포넌트 예제
 │   ├── server-example/     # 서버 컴포넌트 예제
 │   ├── middleware-example/ # 미들웨어 보호 예제
 │   ├── policy/             # 정책 페이지
+│   ├── api-example/        # API 예제 페이지
 │   ├── [...proxy]/         # 프록시 라우트
 │   ├── layout.tsx          # 레이아웃 컴포넌트
 │   ├── page.tsx            # 메인 페이지
@@ -35,6 +37,12 @@ next-auth-example/
 │   └── favicon.ico         # 파비콘
 ├── components/             # 재사용 가능한 컴포넌트
 │   ├── ui/                 # UI 컴포넌트 (버튼, 아바타, 드롭다운 등)
+│   │   ├── avatar.tsx      # 아바타 컴포넌트
+│   │   ├── button.tsx      # 버튼 컴포넌트
+│   │   ├── dropdown-menu.tsx # 드롭다운 메뉴 컴포넌트
+│   │   ├── input.tsx       # 입력 컴포넌트
+│   │   └── navigation-menu.tsx # 네비게이션 메뉴 컴포넌트
+│   ├── access-denied.tsx   # 접근 거부 컴포넌트
 │   ├── auth-components.tsx # 인증 관련 컴포넌트 (로그인/로그아웃)
 │   ├── user-button.tsx     # 사용자 프로필 버튼
 │   ├── header.tsx          # 헤더 컴포넌트
@@ -42,6 +50,7 @@ next-auth-example/
 │   ├── layout.tsx          # 레이아웃 컴포넌트
 │   ├── main-nav.tsx        # 메인 네비게이션
 │   ├── session-data.tsx    # 세션 데이터 표시
+│   ├── custom-link.tsx     # 커스텀 링크 컴포넌트
 │   └── client-example.tsx  # 클라이언트 예제 컴포넌트
 ├── lib/                    # 유틸리티 함수
 │   └── utils.ts            # 유틸리티 함수
@@ -59,6 +68,8 @@ next-auth-example/
 ├── Dockerfile              # Docker 빌드 설정
 ├── docker-compose.yml      # Docker Compose 설정
 ├── serverless.yml          # Serverless 배포 설정
+├── test-docker.sh          # Docker 테스트 스크립트
+├── VERSION                 # 버전 정보 파일
 └── .env.local.example      # 환경 변수 예제
 ```
 
@@ -104,6 +115,7 @@ module.exports = {
 이 설정의 주요 포인트:
 1. `unoptimized: true`: Lambda 환경에서 이미지 최적화를 비활성화하여 서버리스 환경에서의 호환성 확보
 2. `remotePatterns`: 모든 HTTPS 도메인의 이미지를 허용하도록 설정
+3. `output: "standalone"`: Next.js 애플리케이션을 독립 실행형으로 빌드하여 서버리스 환경에 최적화
 
 ### 미들웨어 설정 (middleware.ts)
 
@@ -114,6 +126,8 @@ export const config = {
   matcher: ["/((?!api|_next/static|favicon.ico).*)"],
 }
 ```
+
+이 설정은 정적 파일과 API 라우트를 제외한 모든 경로에 미들웨어를 적용합니다. 특히 `_next/image` 경로가 제외 목록에 없어 이미지 요청이 미들웨어를 통과하도록 합니다.
 
 ## 4. 서버 설정
 
@@ -207,9 +221,14 @@ function handler(event, context) {
 exports.handle = handler;
 ```
 
-## 4. 인증 시스템 (auth.ts)
+이 설정의 주요 포인트:
+1. `source-map-support/register`: 소스맵 지원을 활성화하여 디버깅 용이성 향상
+2. `@vendia/serverless-express`: Express 애플리케이션을 AWS Lambda 핸들러로 변환
+3. 싱글톤 패턴을 사용하여 서버리스 인스턴스 재사용 (콜드 스타트 최소화)
 
-이 애플리케이션은 NextAuth.js를 사용하여 인증 시스템을 구현합니다. 주요 설정은 다음과 같습니다:
+## 5. 인증 시스템 (auth.ts)
+
+이 애플리케이션은 NextAuth.js(Auth.js)를 사용하여 인증 시스템을 구현합니다. 주요 설정은 다음과 같습니다:
 
 ### 인증 제공자
 
@@ -217,6 +236,7 @@ exports.handle = handler;
 - Facebook
 - GitHub
 - Google
+- Twitter (환경 변수에 설정됨)
 
 ### 스토리지 어댑터
 
@@ -281,6 +301,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 })
 ```
 
+### 타입 확장
+
+NextAuth.js의 타입을 확장하여 accessToken을 세션과 JWT에 추가합니다:
+
+```typescript
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    accessToken?: string
+  }
+}
+```
+
 ### 주요 기능
 
 1. **JWT 세션 전략**: 세션 정보를 JWT 토큰에 저장하여 관리합니다.
@@ -288,8 +326,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 3. **토큰 커스터마이징**: JWT 토큰에 추가 정보(예: accessToken)를 포함시킵니다.
 4. **세션 커스터마이징**: 클라이언트에 전달되는 세션 객체에 추가 정보를 포함시킵니다.
 5. **WebAuthn 지원**: 생체 인증 및 하드웨어 키를 통한 인증을 지원합니다(실험적 기능).
+6. **세션 업데이트**: 클라이언트에서 세션 정보를 업데이트할 수 있는 기능을 제공합니다.
 
-## 5. 미들웨어 (middleware.ts)
+## 6. 미들웨어 (middleware.ts)
 
 Next.js 미들웨어를 사용하여 라우트 보호 및 인증 상태 확인을 구현합니다:
 
@@ -299,13 +338,13 @@ export { auth as middleware } from "auth"
 
 // Read more: https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!api|_next/static|favicon.ico).*)"],
 }
 ```
 
-미들웨어는 정적 파일 및 이미지를 제외한 모든 경로에 적용되며, auth.ts에서 정의된 authorized 콜백을 통해 접근 제어를 수행합니다.
+미들웨어는 정적 파일을 제외한 모든 경로에 적용되며, auth.ts에서 정의된 authorized 콜백을 통해 접근 제어를 수행합니다. 특히 `/middleware-example` 경로는 인증된 사용자만 접근할 수 있도록 설정되어 있습니다.
 
-## 6. 배포 방법
+## 7. 배포 방법
 
 ### 로컬 개발 환경
 
@@ -580,7 +619,7 @@ jobs:
 
       - name: Login to Amazon ECR
 
-## 8. 배포 방법
+## 8. 자동화된 배포 파이프라인
 
 ### 로컬 개발 환경
 
@@ -751,7 +790,7 @@ Docker 이미지를 사용하는 AWS Lambda 배포의 장점:
 5. 컨테이너 기반 배포로 인한 확장성 향상
 6. AWS Lambda 환경에 최적화된 설정 가능
 
-## 9. 환경 변수 설정
+## 9. 환경 변수 구성
 
 애플리케이션은 다음과 같은 환경 변수를 사용합니다:
 
@@ -774,7 +813,7 @@ AUTH_TRUST_HOST=1      # 프록시 뒤에서 실행할 때 호스트 신뢰 설�
 AUTH_DEBUG=true        # 디버그 모드 활성화
 ```
 
-## 10. 주요 문제 해결
+## 10. 문제 해결 가이드
 
 ### Docker 빌드 문제
 
@@ -806,7 +845,7 @@ npm을 사용하여 패키지를 설치할 때 "Cannot read properties of null (
    pnpm add -D [패키지명]
    ```
 
-## 11. 향후 개선 사항
+## 11. 향후 개선 계획
 
 - 추가 인증 제공자 통합 (Twitter, Apple, Microsoft 등)
 - 사용자 역할 기반 접근 제어 (RBAC) 구현

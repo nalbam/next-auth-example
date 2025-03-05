@@ -50,24 +50,24 @@ functions:
           cors: true
           path: '{proxy+}'
           method: any
-    warmup:
-      enabled: true
+    # warmup:
+    #   enabled: true
 
 plugins:
   - serverless-dotenv-plugin
   # - serverless-domain-manager
-  - serverless-plugin-warmup
+  # - serverless-plugin-warmup
 
-custom:
-  # customDomain:
-  #   domainName: next-auth.nalbam.com
-  #   basePath: ''
-  #   stage: ${self:provider.stage}
-  #   createRoute53Record: true
-  #   certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
-  #   securityPolicy: tls_1_2
+# custom:
+#   # customDomain:
+#   #   domainName: next-auth.nalbam.com
+#   #   basePath: ''
+#   #   stage: ${self:provider.stage}
+#   #   createRoute53Record: true
+#   #   certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
+#   #   securityPolicy: tls_1_2
 
-  warmup:
-    enabled: true
-    events:
-      - schedule: rate(5 minutes)
+#   warmup:
+#     enabled: true
+#     events:
+#       - schedule: rate(5 minutes)
