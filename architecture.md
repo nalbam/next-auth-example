@@ -120,15 +120,18 @@ serverless.yml 파일을 사용하여 서버리스 환경에 배포할 수 있�
 ```bash
 # Serverless 플러그인 설치
 npm i -g serverless
-npm i -g serverless-domain-manager
 
 # 의존성 설치
 pnpm i express
 pnpm i @vendia/serverless-express source-map-support
 
-# Serverless 플러그인 설치
-sls plugin install -n serverless-domain-manager
-sls plugin install -n serverless-dotenv-plugin
+# Serverless 플러그인 설치 (방법 1 - 권장)
+pnpm add -D serverless-domain-manager serverless-dotenv-plugin
+
+# Serverless 플러그인 설치 (방법 2)
+# npm 오류 "Cannot read properties of null (reading 'matches')"가 발생할 수 있음
+# sls plugin install -n serverless-domain-manager
+# sls plugin install -n serverless-dotenv-plugin
 
 # 로컬 개발 서버 실행
 node app-local.js
@@ -138,6 +141,20 @@ npx serverless deploy --region ap-northeast-2 --stage dev
 ```
 
 ## 6. 주요 문제 해결
+
+### npm 설치 오류
+
+npm을 사용하여 패키지를 설치할 때 "Cannot read properties of null (reading 'matches')" 오류가 발생할 경우:
+
+1. npm 캐시를 정리해보세요:
+   ```bash
+   npm cache clean --force
+   ```
+
+2. 그래도 문제가 해결되지 않으면 pnpm을 사용하세요:
+   ```bash
+   pnpm add -D [패키지명]
+   ```
 
 ## 7. 향후 개선 사항
 
