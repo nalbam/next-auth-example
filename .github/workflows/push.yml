@@ -70,10 +70,10 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          push: true
-          tags: "${{ env.IMAGE_URI }}:latest"
           platforms: ${{ env.PLATFORM }}
-          outputs: type=docker  # Lambda가 지원하는 Docker Image Manifest V2 형식 강제 적용
+          tags: "${{ env.IMAGE_URI }}:latest"
+          outputs: type=image,push=true
+          provenance: false  # Docker V2 Schema 2 형식으로 강제 적용 (OCI 형식 비활성화)
 
       - name: Set up environment variables 📝
         run: |

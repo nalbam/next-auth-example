@@ -195,11 +195,35 @@ AWS Lambda에서 실행하기 위한 Dockerfile은 AWS Lambda 컨테이너 이�
 # AWS Lambda 배포용 Docker 이미지 빌드
 docker build -t next-auth-example-lambda .
 
-# ECR 리포지토리에 이미지 푸시
+# ECR 리포지토리에 이미지 푸시 (Docker V2 Schema 2 형식으로 푸시)
 aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com
 docker tag next-auth-example-lambda 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
 docker push 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
 ```
+
+#### Docker V2 Schema 2 형식 사용
+
+AWS Lambda는 Docker V2 Schema 2 형식의 이미지를 요구합니다. GitHub Actions에서 이미지를 빌드하고 푸시할 때 다음과 같은 설정을 사용하여 Docker V2 Schema 2 형식을 강제 적용합니다:
+
+```yaml
+- name: Build and push
+  uses: docker/build-push-action@v6
+  with:
+    context: .
+    platforms: linux/amd64
+    tags: "your-ecr-repo:latest"
+    outputs: type=image,push=true
+    provenance: false  # Docker V2 Schema 2 형식으로 강제 적용 (OCI 형식 비활성화)
+```
+
+이 설정의 주요 포인트:
+1. `outputs: type=image,push=true`: 이미지를 빌드하고 푸시하는 방식 지정
+2. `provenance: false`: OCI 형식 대신 Docker V2 Schema 2 형식 사용 강제 적용
+
+Docker V2 Schema 2 형식을 사용하는 이유:
+- AWS Lambda가 OCI 형식이 아닌 Docker V2 Schema 2 형식만 지원
+- 호환성 및 안정성 향상
+- Lambda 함수 배포 시 오류 방지
 
 #### Docker Compose 설정 (docker-compose.yml)
 
