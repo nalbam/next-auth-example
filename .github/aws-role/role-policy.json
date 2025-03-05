@@ -14,6 +14,13 @@
         "ecr:*"
       ],
       "Resource": "arn:aws:ecr:*:*:repository/nalbam/next-auth-example"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetRole"
+      ],
+      "Resource": "*"
     }
   ]
 }
