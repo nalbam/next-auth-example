@@ -14,6 +14,12 @@ env:
 
   IMAGE_URI: "968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example"
 
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+  AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
+  AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
+  AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+  AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+
 # Permission can be added at job level or workflow level
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -67,3 +73,14 @@ jobs:
           push: true
           tags: "${{ env.IMAGE_URI }}:${{ steps.bump.outputs.version }}"
           platforms: ${{ env.PLATFORM }}
+
+      - name: Set up environment variables 📝
+        run: |
+          echo "AUTH_SECRET=${AUTH_SECRET}" >> .env
+          echo "AUTH_GITHUB_ID=${AUTH_GITHUB_ID}" >> .env
+          echo "AUTH_GITHUB_SECRET=${AUTH_GITHUB_SECRET}" >> .env
+          echo "AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}" >> .env
+          echo "AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}" >> .env
+
+      # - name: Deploy to AWS Lambda 🚀
+      #   run: npx serverless deploy --region ${{ env.AWS_REGION }}

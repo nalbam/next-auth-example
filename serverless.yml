@@ -8,8 +8,8 @@ provider:
   stage: 'dev'
   # stackName: ${self:service}-${self:provider.stage}
   # apiName: ${self:service}-${self:provider.stage}
-  timeout: 30
-  memorySize: 1024
+  timeout: 25
+  memorySize: 2048
   # apiGateway:
   #   binaryMediaTypes:
   #     - '*/*'
@@ -18,14 +18,11 @@ provider:
   #   lambda: true
   environment:
     NODE_ENV: dev
-    # .env 파일의 내용을 모두 입력해줍니다.
   ecr:
-    # ECR 리포지토리 이름 (자동 생성됨)
     images:
       app:
-        uri: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
-        platform: linux/arm64
-  architecture: arm64
+        uri: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:v0.1.8
+  # architecture: arm64
   iam:
     role:
       statements:
@@ -54,23 +51,21 @@ functions:
     #       path: '{proxy+}'
     #       method: any
 
-# Docker 이미지를 사용하므로 package 설정은 필요 없음
-
 plugins:
   - serverless-dotenv-plugin
   # - serverless-domain-manager
-  - serverless-plugin-warmup
+  # - serverless-plugin-warmup
 
-custom:
-  # customDomain:
-  #   domainName: next-auth.nalbam.com
-  #   basePath: ''
-  #   stage: ${self:provider.stage}
-  #   createRoute53Record: true
-  #   certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
-  #   securityPolicy: tls_1_2
+# custom:
+#   # customDomain:
+#   #   domainName: next-auth.nalbam.com
+#   #   basePath: ''
+#   #   stage: ${self:provider.stage}
+#   #   createRoute53Record: true
+#   #   certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
+#   #   securityPolicy: tls_1_2
 
-  warmup:
-    enabled: true
-    events:
-      - schedule: rate(5 minutes)
+#   warmup:
+#     enabled: true
+#     events:
+#       - schedule: rate(5 minutes)
