@@ -2,7 +2,7 @@
 
 ## 1. 애플리케이션 개요
 
-이 애플리케이션은 Next.js와 NextAuth.js를 사용한 인증 예제 애플리케이션입니다. Express 서버를 통해 Next.js 애플리케이션을 제공하며, 다양한 인증 방식과 보호된 라우트 예제를 포함하고 있습니다.
+이 애플리케이션은 Next.js와 NextAuth.js를 사용한 인증 예제 애플리케이션입니다. Express 서버를 통해 Next.js 애플리케이션을 제공하며, 다양한 인증 방식과 보호된 라우트 예제를 포함하고 있습니다. 이 프로젝트는 Next.js의 App Router를 사용하여 구현되었으며, 서버 컴포넌트와 클라이언트 컴포넌트를 모두 활용합니다.
 
 ## 2. 프로젝트 구조
 
@@ -12,18 +12,43 @@ next-auth-example/
 │   ├── api/                # API 라우트
 │   │   └── protected/      # 보호된 API 라우트
 │   ├── auth/               # 인증 관련 라우트
-│   ├── [...]               # 기타 페이지 컴포넌트
+│   │   └── [...nextauth]/  # NextAuth.js 동적 라우트
+│   ├── client-example/     # 클라이언트 컴포넌트 예제
+│   ├── server-example/     # 서버 컴포넌트 예제
+│   ├── middleware-example/ # 미들웨어 보호 예제
+│   ├── policy/             # 정책 페이지
+│   ├── [...proxy]/         # 프록시 라우트
 │   ├── layout.tsx          # 레이아웃 컴포넌트
-│   └── page.tsx            # 메인 페이지
+│   ├── page.tsx            # 메인 페이지
+│   ├── globals.css         # 전역 스타일
+│   └── favicon.ico         # 파비콘
 ├── components/             # 재사용 가능한 컴포넌트
-│   ├── ui/                 # UI 컴포넌트
-│   └── [...]               # 기타 컴포넌트
+│   ├── ui/                 # UI 컴포넌트 (버튼, 아바타, 드롭다운 등)
+│   ├── auth-components.tsx # 인증 관련 컴포넌트 (로그인/로그아웃)
+│   ├── user-button.tsx     # 사용자 프로필 버튼
+│   ├── header.tsx          # 헤더 컴포넌트
+│   ├── footer.tsx          # 푸터 컴포넌트
+│   ├── layout.tsx          # 레이아웃 컴포넌트
+│   ├── main-nav.tsx        # 메인 네비게이션
+│   ├── session-data.tsx    # 세션 데이터 표시
+│   └── client-example.tsx  # 클라이언트 예제 컴포넌트
 ├── lib/                    # 유틸리티 함수
+│   └── utils.ts            # 유틸리티 함수
 ├── public/                 # 정적 파일
+│   └── logo.png            # 로고 이미지
 ├── app.js                  # Express 서버 설정
 ├── app-local.js            # 로컬 개발 서버 실행
 ├── auth.ts                 # NextAuth 설정
-└── [...]                   # 기타 설정 파일
+├── middleware.ts           # Next.js 미들웨어
+├── index.js                # Serverless 진입점
+├── next.config.js          # Next.js 설정
+├── tailwind.config.js      # Tailwind CSS 설정
+├── postcss.config.js       # PostCSS 설정
+├── tsconfig.json           # TypeScript 설정
+├── Dockerfile              # Docker 빌드 설정
+├── docker-compose.yml      # Docker Compose 설정
+├── serverless.yml          # Serverless 배포 설정
+└── .env.local.example      # 환경 변수 예제
 ```
 
 ## 3. 서버 설정
@@ -41,6 +66,7 @@ Express 서버는 Next.js 애플리케이션을 제공하는 역할을 합니다
 // app.js
 const express = require('express');
 const next = require('next');
+const path = require('path');
 
 const dev = true;
 const nextApp = next({ dev });
@@ -90,20 +116,58 @@ const startApp = async () => {
 startApp();
 ```
 
-## 4. 인증 설정 (auth.ts)
+### Serverless 진입점 (index.js)
 
-NextAuth.js를 사용하여 인증을 구현합니다. 다양한 인증 제공자(OAuth, 이메일, 자격 증명 등)를 설정할 수 있습니다.
+AWS Lambda와 같은 서버리스 환경에서 애플리케이션을 실행하기 위한 진입점입니다:
 
-## 5. 배포 방법
+```javascript
+// index.js
+require('source-map-support/register');
+
+const serverlessExpress = require('@vendia/serverless-express');
+const app = require('./app');
+
+let serverlessExpressInstance;
+
+async function setup(event, context) {
+  serverlessExpressInstance = serverlessExpress({ app });
+  return serverlessExpressInstance(event, context);
+}
+
+function handler(event, context) {
+  if (serverlessExpressInstance) return serverlessExpressInstance(event, context);
+
+  return setup(event, context);
+}
+
+exports.handle = handler;
+```
+
+## 8. 배포 방법
 
 ### 로컬 개발 환경
 
 ```bash
+# 의존성 설치
+pnpm install
+
+# 환경 변수 설정
+cp .env.local.example .env.local
+# .env.local 파일 편집하여 필요한 환경 변수 설정
+
 # 로컬 개발 서버 실행
+pnpm dev
+# 또는
 node app-local.js
 ```
 
 ### Docker 배포
+
+Dockerfile은 다단계 빌드를 사용하여 최적화된 이미지를 생성합니다:
+
+1. 의존성 설치 단계
+2. 소스 코드 빌드 단계
+3. 최종 실행 이미지 생성 단계
 
 ```bash
 # Docker 이미지 빌드
@@ -111,9 +175,123 @@ docker build -t next-auth-example .
 
 # Docker 컨테이너 실행
 docker run -p 3000:3000 next-auth-example
+
+# Docker Compose로 실행
+docker-compose up
 ```
 
-#### Docker 빌드 문제 해결
+#### Docker Compose 설정 (docker-compose.yml)
+
+```yaml
+services:
+  authjs-docker-test:
+    build: .
+    environment:
+      - TEST_KEYCLOAK_USERNAME
+      - TEST_KEYCLOAK_PASSWORD
+      - AUTH_KEYCLOAK_ID
+      - AUTH_KEYCLOAK_SECRET
+      - AUTH_KEYCLOAK_ISSUER
+      - AUTH_SECRET="MohY0/2zSQw/psWEnejC2ka3Al0oifvY4YjOkUaFfnI="
+      - AUTH_URL=http://localhost:3000/auth
+    ports:
+      - "3000:3000"
+```
+
+### Serverless 배포 (deprecated)
+
+serverless.yml 파일을 사용하여 AWS Lambda에 배포할 수 있습니다:
+
+```yaml
+# serverless.yml
+app: next-auth-example
+service: next-auth-example
+
+provider:
+  name: aws
+  region: 'ap-northeast-2'
+  runtime: nodejs16.x
+  stage: 'dev'
+  stackName: ${self:provider.stage}-${self:service}
+  apiName: ${self:provider.stage}-${self:service}
+  timeout: 25
+  memorySize: 2048
+  versionFunctions: false
+  apiGateway:
+    binaryMediaTypes:
+      - '*/*'
+  tracing:
+    apiGateway: true
+    lambda: true
+  environment:
+    NODE_ENV: dev
+    # .env 파일의 내용을 모두 입력해줍니다.
+
+functions:
+  app:
+    handler: index.handle
+    events:
+      - http:
+          cors: true
+          path: '/'
+          method: any
+      - http:
+          cors: true
+          path: '{proxy+}'
+          method: any
+
+plugins:
+  - serverless-domain-manager
+  - serverless-dotenv-plugin
+
+custom:
+  customDomain:
+    domainName: next-auth.nalbam.com
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+    certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
+    securityPolicy: tls_1_2
+```
+
+배포 명령어:
+
+```bash
+# 의존성 설치
+pnpm i express
+pnpm i @vendia/serverless-express source-map-support
+pnpm add -D serverless-domain-manager serverless-dotenv-plugin
+
+# Serverless 배포
+npx serverless deploy --region ap-northeast-2 --stage dev
+```
+
+## 9. 환경 변수 설정
+
+애플리케이션은 다음과 같은 환경 변수를 사용합니다:
+
+```
+# 필수 환경 변수
+AUTH_SECRET=           # 인증 암호화 키 (npx auth secret 또는 openssl rand -hex 32로 생성)
+
+# OAuth 제공자 설정
+AUTH_FACEBOOK_ID=      # Facebook OAuth 클라이언트 ID
+AUTH_FACEBOOK_SECRET=  # Facebook OAuth 클라이언트 시크릿
+
+AUTH_GITHUB_ID=        # GitHub OAuth 클라이언트 ID
+AUTH_GITHUB_SECRET=    # GitHub OAuth 클라이언트 시크릿
+
+AUTH_GOOGLE_ID=        # Google OAuth 클라이언트 ID
+AUTH_GOOGLE_SECRET=    # Google OAuth 클라이언트 시크릿
+
+# 선택적 환경 변수
+AUTH_TRUST_HOST=1      # 프록시 뒤에서 실행할 때 호스트 신뢰 설정
+AUTH_DEBUG=true        # 디버그 모드 활성화
+```
+
+## 10. 주요 문제 해결
+
+### Docker 빌드 문제
 
 Docker 빌드 중 다음과 같은 오류가 발생할 경우:
 ```
@@ -129,35 +307,6 @@ RUN corepack enable pnpm && pnpm i --frozen-lockfile
 RUN npm install -g pnpm && pnpm i --frozen-lockfile
 ```
 
-### Serverless 배포
-
-serverless.yml 파일을 사용하여 서버리스 환경에 배포할 수 있습니다.
-
-```bash
-# Serverless 플러그인 설치
-npm i -g serverless
-
-# 의존성 설치
-pnpm i express
-pnpm i @vendia/serverless-express source-map-support
-
-# Serverless 플러그인 설치 (방법 1 - 권장)
-pnpm add -D serverless-domain-manager serverless-dotenv-plugin
-
-# Serverless 플러그인 설치 (방법 2)
-# npm 오류 "Cannot read properties of null (reading 'matches')"가 발생할 수 있음
-# sls plugin install -n serverless-domain-manager
-# sls plugin install -n serverless-dotenv-plugin
-
-# 로컬 개발 서버 실행
-node app-local.js
-
-# Serverless 배포
-npx serverless deploy --region ap-northeast-2 --stage dev
-```
-
-## 6. 주요 문제 해결
-
 ### npm 설치 오류
 
 npm을 사용하여 패키지를 설치할 때 "Cannot read properties of null (reading 'matches')" 오류가 발생할 경우:
@@ -172,9 +321,13 @@ npm을 사용하여 패키지를 설치할 때 "Cannot read properties of null (
    pnpm add -D [패키지명]
    ```
 
-## 7. 향후 개선 사항
+## 11. 향후 개선 사항
 
-- 환경 변수를 통한 개발/프로덕션 모드 설정
-- 로깅 시스템 강화
-- 테스트 자동화
-- 성능 최적화
+- 추가 인증 제공자 통합 (Twitter, Apple, Microsoft 등)
+- 사용자 역할 기반 접근 제어 (RBAC) 구현
+- 다국어 지원 추가
+- 테스트 자동화 (Jest, Playwright)
+- 성능 최적화 및 번들 크기 감소
+- 보안 강화 (CSRF 보호, 속도 제한 등)
+- 사용자 프로필 관리 기능 추가
+- 모니터링 및 로깅 시스템 강화
