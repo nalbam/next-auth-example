@@ -198,9 +198,9 @@ services:
       - "3000:3000"
 ```
 
-### Serverless 배포 (deprecated)
+### Serverless 배포
 
-serverless.yml 파일을 사용하여 AWS Lambda에 배포할 수 있습니다:
+serverless.yml 파일을 사용하여 AWS Lambda에 Docker 이미지로 배포할 수 있습니다:
 
 ```yaml
 # serverless.yml
@@ -210,7 +210,6 @@ service: next-auth-example
 provider:
   name: aws
   region: 'ap-northeast-2'
-  runtime: nodejs16.x
   stage: 'dev'
   stackName: ${self:provider.stage}-${self:service}
   apiName: ${self:provider.stage}-${self:service}
@@ -226,10 +225,19 @@ provider:
   environment:
     NODE_ENV: dev
     # .env 파일의 내용을 모두 입력해줍니다.
+  ecr:
+    # ECR 리포지토리 이름 (자동 생성됨)
+    images:
+      appimage:
+        path: ./
+        platform: linux/amd64
 
 functions:
   app:
-    handler: index.handle
+    image:
+      name: appimage
+      command:
+        - index.handle
     events:
       - http:
           cors: true
@@ -262,9 +270,17 @@ pnpm i express
 pnpm i @vendia/serverless-express source-map-support
 pnpm add -D serverless-domain-manager serverless-dotenv-plugin
 
-# Serverless 배포
+# Serverless 배포 (Docker 이미지 사용)
 npx serverless deploy --region ap-northeast-2 --stage dev
 ```
+
+Docker 이미지를 사용하는 Serverless 배포의 장점:
+
+1. 로컬 개발 환경과 배포 환경의 일관성 유지
+2. 의존성 관리 간소화
+3. 배포 패키지 크기 제한 우회
+4. 복잡한 런타임 환경 지원
+5. 컨테이너 기반 배포로 인한 확장성 향상
 
 ## 9. 환경 변수 설정
 
