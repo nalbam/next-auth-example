@@ -82,5 +82,5 @@ jobs:
           echo "AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}" >> .env
           echo "AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}" >> .env
 
-      # - name: Deploy to AWS Lambda 🚀
-      #   run: npx serverless deploy --region ${{ env.AWS_REGION }}
+      - name: Deploy to AWS Lambda 🚀
+        run: npx serverless deploy --region ${{ env.AWS_REGION }}

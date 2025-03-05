@@ -21,8 +21,8 @@ provider:
   ecr:
     images:
       app:
-        uri: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:v0.1.8
-  # architecture: arm64
+        uri: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:v0.1.9
+  architecture: x86_64
   iam:
     role:
       statements:
