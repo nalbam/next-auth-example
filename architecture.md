@@ -113,6 +113,22 @@ docker build -t next-auth-example .
 docker run -p 3000:3000 next-auth-example
 ```
 
+#### Docker 빌드 문제 해결
+
+Docker 빌드 중 다음과 같은 오류가 발생할 경우:
+```
+ERROR: failed to solve: process "/bin/sh -c corepack enable pnpm && pnpm i --frozen-lockfile" did not complete successfully
+```
+
+Dockerfile에서 corepack 대신 npm을 통해 pnpm을 직접 설치하도록 변경했습니다:
+```dockerfile
+# 변경 전
+RUN corepack enable pnpm && pnpm i --frozen-lockfile
+
+# 변경 후
+RUN npm install -g pnpm && pnpm i --frozen-lockfile
+```
+
 ### Serverless 배포
 
 serverless.yml 파일을 사용하여 서버리스 환경에 배포할 수 있습니다.
