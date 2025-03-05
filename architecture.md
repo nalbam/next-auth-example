@@ -4,6 +4,17 @@
 
 이 애플리케이션은 Next.js와 NextAuth.js를 사용한 인증 예제 애플리케이션입니다. Express 서버를 통해 Next.js 애플리케이션을 제공하며, 다양한 인증 방식과 보호된 라우트 예제를 포함하고 있습니다. 이 프로젝트는 Next.js의 App Router를 사용하여 구현되었으며, 서버 컴포넌트와 클라이언트 컴포넌트를 모두 활용합니다.
 
+### 주요 기능
+
+- 다양한 OAuth 제공자를 통한 인증 (GitHub, Google, Facebook 등)
+- JWT 기반 세션 관리
+- 서버 컴포넌트에서의 인증 상태 접근
+- 클라이언트 컴포넌트에서의 인증 상태 접근
+- 미들웨어를 통한 라우트 보호
+- API 라우트 보호
+- WebAuthn 지원 (실험적 기능)
+- Unstorage 어댑터를 통한 세션 저장소 지원 (메모리 또는 Vercel KV)
+
 ## 2. 프로젝트 구조
 
 ```
@@ -142,6 +153,379 @@ function handler(event, context) {
 
 exports.handle = handler;
 ```
+
+## 4. 인증 시스템 (auth.ts)
+
+이 애플리케이션은 NextAuth.js를 사용하여 인증 시스템을 구현합니다. 주요 설정은 다음과 같습니다:
+
+### 인증 제공자
+
+다음과 같은 OAuth 제공자를 지원합니다:
+- Facebook
+- GitHub
+- Google
+
+### 스토리지 어댑터
+
+세션 및 사용자 데이터 저장을 위해 Unstorage 어댑터를 사용합니다:
+- 프로덕션 환경(Vercel): Vercel KV 스토리지 사용
+- 개발 환경: 메모리 스토리지 사용
+
+```typescript
+// auth.ts
+import NextAuth from "next-auth"
+import "next-auth/jwt"
+
+import Facebook from "next-auth/providers/facebook"
+import GitHub from "next-auth/providers/github"
+import Google from "next-auth/providers/google"
+import { createStorage } from "unstorage"
+import memoryDriver from "unstorage/drivers/memory"
+import vercelKVDriver from "unstorage/drivers/vercel-kv"
+import { UnstorageAdapter } from "@auth/unstorage-adapter"
+
+const storage = createStorage({
+  driver: process.env.VERCEL
+    ? vercelKVDriver({
+        url: process.env.AUTH_KV_REST_API_URL,
+        token: process.env.AUTH_KV_REST_API_TOKEN,
+        env: false,
+      })
+    : memoryDriver(),
+})
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  debug: !!process.env.AUTH_DEBUG,
+  theme: { logo: "https://authjs.dev/img/logo-sm.png" },
+  adapter: UnstorageAdapter(storage),
+  providers: [
+    Facebook,
+    GitHub,
+    Google,
+  ],
+  basePath: "/auth",
+  session: { strategy: "jwt" },
+  callbacks: {
+    authorized({ request, auth }) {
+      const { pathname } = request.nextUrl
+      if (pathname === "/middleware-example") return !!auth
+      return true
+    },
+    jwt({ token, trigger, session, account }) {
+      if (trigger === "update") token.name = session.user.name
+      if (account?.provider === "keycloak") {
+        return { ...token, accessToken: account.access_token }
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token?.accessToken) session.accessToken = token.accessToken
+
+      return session
+    },
+  },
+  experimental: { enableWebAuthn: true },
+})
+```
+
+### 주요 기능
+
+1. **JWT 세션 전략**: 세션 정보를 JWT 토큰에 저장하여 관리합니다.
+2. **경로 보호**: 미들웨어를 통해 특정 경로에 대한 접근을 제한합니다.
+3. **토큰 커스터마이징**: JWT 토큰에 추가 정보(예: accessToken)를 포함시킵니다.
+4. **세션 커스터마이징**: 클라이언트에 전달되는 세션 객체에 추가 정보를 포함시킵니다.
+5. **WebAuthn 지원**: 생체 인증 및 하드웨어 키를 통한 인증을 지원합니다(실험적 기능).
+
+## 5. 미들웨어 (middleware.ts)
+
+Next.js 미들웨어를 사용하여 라우트 보호 및 인증 상태 확인을 구현합니다:
+
+```typescript
+// middleware.ts
+export { auth as middleware } from "auth"
+
+// Read more: https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+}
+```
+
+미들웨어는 정적 파일 및 이미지를 제외한 모든 경로에 적용되며, auth.ts에서 정의된 authorized 콜백을 통해 접근 제어를 수행합니다.
+
+## 6. 배포 방법
+
+### 로컬 개발 환경
+
+```bash
+# 의존성 설치
+pnpm install
+
+# 환경 변수 설정
+cp .env.local.example .env.local
+# .env.local 파일 편집하여 필요한 환경 변수 설정
+
+# 로컬 개발 서버 실행
+pnpm dev
+# 또는
+node app-local.js
+```
+
+### Docker 배포
+
+Dockerfile은 다단계 빌드를 사용하여 최적화된 이미지를 생성합니다:
+
+```dockerfile
+# syntax=docker/dockerfile:1
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install dependencies
+COPY package.json pnpm-lock.yaml* ./
+# 직접 pnpm 설치 후 의존성 설치
+RUN npm install -g pnpm && pnpm i --frozen-lockfile
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN npm install -g pnpm && pnpm build
+
+# AWS Lambda 실행을 위한 이미지, 필요한 파일만 복사
+FROM public.ecr.aws/lambda/nodejs:20 AS runner
+WORKDIR ${LAMBDA_TASK_ROOT}
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# 필요한 의존성 설치
+RUN npm install express @vendia/serverless-express source-map-support
+
+# 빌드된 Next.js 애플리케이션 복사
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+# Lambda 핸들러 파일 복사
+COPY app.js ./
+COPY index.js ./
+
+# Lambda 함수 핸들러 설정
+CMD ["index.handle"]
+```
+
+#### 일반 Docker 배포
+
+```bash
+# Docker 이미지 빌드
+docker build -t next-auth-example .
+
+# Docker 컨테이너 실행
+docker run -p 3000:3000 next-auth-example
+
+# Docker Compose로 실행
+docker-compose up
+```
+
+#### Docker Compose 설정 (docker-compose.yml)
+
+```yaml
+services:
+  authjs-docker-test:
+    build: .
+    environment:
+      - TEST_KEYCLOAK_USERNAME
+      - TEST_KEYCLOAK_PASSWORD
+      - AUTH_KEYCLOAK_ID
+      - AUTH_KEYCLOAK_SECRET
+      - AUTH_KEYCLOAK_ISSUER
+      - AUTH_SECRET="MohY0/2zSQw/psWEnejC2ka3Al0oifvY4YjOkUaFfnI="
+      - AUTH_URL=http://localhost:3000/auth
+    ports:
+      - "3000:3000"
+```
+
+### Serverless 배포
+
+serverless.yml 파일을 사용하여 AWS Lambda에 Docker 이미지로 배포할 수 있습니다:
+
+```yaml
+# serverless.yml
+# org: nalbam
+app: next-auth-example
+service: next-auth-example
+
+provider:
+  name: aws
+  region: 'ap-northeast-2'
+  stage: 'dev'
+  # stackName: ${self:service}-${self:provider.stage}
+  # apiName: ${self:service}-${self:provider.stage}
+  timeout: 25
+  memorySize: 2048
+  apiGateway:
+    binaryMediaTypes:
+      - '*/*'
+  # tracing:
+  #   apiGateway: true
+  #   lambda: true
+  environment:
+    NODE_ENV: dev
+  ecr:
+    images:
+      app:
+        uri: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
+  architecture: x86_64
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+          Resource: "*"
+
+functions:
+  app:
+    image:
+      name: app
+      # command:
+      #   - index.handle
+    # events:
+    #   - httpApi: '*'
+    events:
+      - http:
+          cors: true
+          path: '/'
+          method: any
+      - http:
+          cors: true
+          path: '{proxy+}'
+          method: any
+
+plugins:
+  - serverless-dotenv-plugin
+  # - serverless-domain-manager
+  - serverless-plugin-warmup
+
+custom:
+  # customDomain:
+  #   domainName: next-auth.nalbam.com
+  #   basePath: ''
+  #   stage: ${self:provider.stage}
+  #   createRoute53Record: true
+  #   certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
+  #   securityPolicy: tls_1_2
+
+  warmup:
+    enabled: true
+    events:
+      - schedule: rate(5 minutes)
+```
+
+#### AWS Lambda 배포용 Docker 이미지
+
+AWS Lambda에서 실행하기 위한 Dockerfile은 AWS Lambda 컨테이너 이미지 요구사항을 충족하도록 구성되어 있습니다:
+
+1. 기본 이미지로 `public.ecr.aws/lambda/nodejs:20` 사용
+2. Lambda 함수 핸들러(`index.handle`)를 실행할 수 있도록 설정
+3. 필요한 의존성(`express`, `@vendia/serverless-express`, `source-map-support`)만 설치
+4. 빌드된 Next.js 애플리케이션과 Lambda 핸들러 파일 복사
+
+```bash
+# AWS Lambda 배포용 Docker 이미지 빌드
+docker build -t next-auth-example-lambda .
+
+# ECR 리포지토리에 이미지 푸시 (Docker V2 Schema 2 형식으로 푸시)
+aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com
+docker tag next-auth-example-lambda 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
+docker push 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
+```
+
+### GitHub Actions 배포 파이프라인
+
+GitHub Actions를 사용하여 자동화된 배포 파이프라인을 구성했습니다:
+
+```yaml
+# .github/workflows/push.yml
+name: build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+env:
+  AWS_REGION: ap-northeast-2
+  AWS_ROLE_ARN: "arn:aws:iam::968005369378:role/next-auth-example"
+
+  PLATFORM: linux/amd64 # ,linux/arm64
+
+  IMAGE_URI: "968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example"
+
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+  AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
+  AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
+  AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+  AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+
+# Permission can be added at job level or workflow level
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: write   # This is required for actions/checkout
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Bump Version 🏷️
+        id: bump
+        uses: opspresso/action-builder@master
+        with:
+          args: --version
+
+      - name: Release Version 🚀
+        uses: opspresso/action-builder@master
+        with:
+          args: --release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.bump.outputs.version }}
+
+      - name: Set up QEMU 🐳
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx 🐳
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS Credentials 🔑
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: github-actions-ci-bot
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
 
 ## 8. 배포 방법
 
