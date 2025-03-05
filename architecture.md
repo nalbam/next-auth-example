@@ -169,6 +169,8 @@ Dockerfile은 다단계 빌드를 사용하여 최적화된 이미지를 생성�
 2. 소스 코드 빌드 단계
 3. 최종 실행 이미지 생성 단계
 
+#### 일반 Docker 배포
+
 ```bash
 # Docker 이미지 빌드
 docker build -t next-auth-example .
@@ -178,6 +180,25 @@ docker run -p 3000:3000 next-auth-example
 
 # Docker Compose로 실행
 docker-compose up
+```
+
+#### AWS Lambda 배포용 Docker 이미지
+
+AWS Lambda에서 실행하기 위한 Dockerfile은 AWS Lambda 컨테이너 이미지 요구사항을 충족하도록 구성되어 있습니다:
+
+1. 기본 이미지로 `public.ecr.aws/lambda/nodejs:20` 사용
+2. Lambda 함수 핸들러(`index.handle`)를 실행할 수 있도록 설정
+3. 필요한 의존성(`express`, `@vendia/serverless-express`, `source-map-support`)만 설치
+4. 빌드된 Next.js 애플리케이션과 Lambda 핸들러 파일 복사
+
+```bash
+# AWS Lambda 배포용 Docker 이미지 빌드
+docker build -t next-auth-example-lambda .
+
+# ECR 리포지토리에 이미지 푸시
+aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com
+docker tag next-auth-example-lambda 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
+docker push 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
 ```
 
 #### Docker Compose 설정 (docker-compose.yml)
@@ -211,55 +232,35 @@ provider:
   name: aws
   region: 'ap-northeast-2'
   stage: 'dev'
-  stackName: ${self:provider.stage}-${self:service}
-  apiName: ${self:provider.stage}-${self:service}
   timeout: 25
   memorySize: 2048
-  versionFunctions: false
-  apiGateway:
-    binaryMediaTypes:
-      - '*/*'
-  tracing:
-    apiGateway: true
-    lambda: true
   environment:
     NODE_ENV: dev
     # .env 파일의 내용을 모두 입력해줍니다.
   ecr:
-    # ECR 리포지토리 이름 (자동 생성됨)
     images:
-      appimage:
-        path: ./
-        platform: linux/amd64
+      app:
+        uri: [ECR_REPOSITORY_URI]:[TAG]
+  architecture: x86_64
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+          Resource: "*"
 
 functions:
   app:
     image:
-      name: appimage
-      command:
-        - index.handle
+      name: app
     events:
-      - http:
-          cors: true
-          path: '/'
-          method: any
-      - http:
-          cors: true
-          path: '{proxy+}'
-          method: any
+      - httpApi: '*'
 
 plugins:
-  - serverless-domain-manager
   - serverless-dotenv-plugin
-
-custom:
-  customDomain:
-    domainName: next-auth.nalbam.com
-    basePath: ''
-    stage: ${self:provider.stage}
-    createRoute53Record: true
-    certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
-    securityPolicy: tls_1_2
 ```
 
 배포 명령어:
@@ -268,19 +269,26 @@ custom:
 # 의존성 설치
 pnpm i express
 pnpm i @vendia/serverless-express source-map-support
-pnpm add -D serverless-domain-manager serverless-dotenv-plugin
+pnpm add -D serverless-dotenv-plugin
 
-# Serverless 배포 (Docker 이미지 사용)
+# Docker 이미지 빌드 및 ECR 푸시
+docker build -t next-auth-example-lambda .
+aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin [AWS_ACCOUNT_ID].dkr.ecr.ap-northeast-2.amazonaws.com
+docker tag next-auth-example-lambda [AWS_ACCOUNT_ID].dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:[TAG]
+docker push [AWS_ACCOUNT_ID].dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:[TAG]
+
+# serverless.yml 파일에서 ECR 이미지 URI 업데이트 후 배포
 npx serverless deploy --region ap-northeast-2 --stage dev
 ```
 
-Docker 이미지를 사용하는 Serverless 배포의 장점:
+Docker 이미지를 사용하는 AWS Lambda 배포의 장점:
 
 1. 로컬 개발 환경과 배포 환경의 일관성 유지
 2. 의존성 관리 간소화
-3. 배포 패키지 크기 제한 우회
+3. 배포 패키지 크기 제한 우회 (Lambda 직접 배포 시 50MB 제한)
 4. 복잡한 런타임 환경 지원
 5. 컨테이너 기반 배포로 인한 확장성 향상
+6. AWS Lambda 환경에 최적화된 설정 가능
 
 ## 9. 환경 변수 설정
 

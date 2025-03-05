@@ -25,35 +25,24 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm install -g pnpm && pnpm build
 
-# Production image, copy all the files and run next
-FROM base AS runner
-WORKDIR /app
+# AWS Lambda 실행을 위한 이미지, 필요한 파일만 복사
+FROM public.ecr.aws/lambda/nodejs:20 AS runner
+WORKDIR ${LAMBDA_TASK_ROOT}
 
 ENV NODE_ENV=production
-# Uncomment the following line in case you want to disable telemetry during runtime.
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# 필요한 의존성 설치
+RUN npm install express @vendia/serverless-express source-map-support
 
+# 빌드된 Next.js 애플리케이션 복사
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+# Lambda 핸들러 파일 복사
+COPY app.js ./
+COPY index.js ./
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
-EXPOSE 3000
-
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
-
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD ["node", "server.js"]
+# Lambda 함수 핸들러 설정
+CMD ["index.handle"]
