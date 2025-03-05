@@ -66,6 +66,24 @@ next-auth-example/
 
 Next.js의 이미지 최적화 기능을 AWS Lambda 환경에서 사용하기 위해 다음과 같은 설정을 적용했습니다:
 
+### AWS Lambda 및 API Gateway 설정 (serverless.yml)
+
+Lambda 함수와 API Gateway가 이미지를 효율적으로 처리할 수 있도록 다음과 같이 설정했습니다:
+
+```yaml
+provider:
+  timeout: 30          # 이미지 처리를 위해 타임아웃 증가
+  memorySize: 3072     # 이미지 처리를 위해 메모리 증가
+  apiGateway:
+    binaryMediaTypes:
+      - '*/*'          # 모든 바이너리 미디어(이미지 포함) 처리
+```
+
+이 설정의 주요 포인트:
+1. `memorySize: 3072`: 이미지 처리에 필요한 충분한 메모리 할당 (CPU 성능도 향상)
+2. `timeout: 30`: 이미지 처리에 필요한 충분한 시간 제공
+3. `binaryMediaTypes: ['*/*']`: 모든 바이너리 미디어 타입 지원
+
 ### Next.js 이미지 설정 (next.config.js)
 
 ```javascript
