@@ -93,6 +93,9 @@ importers:
       serverless-dotenv-plugin:
         specifier: ^6.0.0
         version: 6.0.0
+      serverless-plugin-warmup:
+        specifier: ^8.3.0
+        version: 8.3.0
       tailwindcss:
         specifier: ^3.3.3
         version: 3.4.17
@@ -2163,6 +2166,9 @@ packages:
     resolution: {integrity: sha512-8tLVNwHfDO0sBz6+m+DLTZquRk0AZq9rzqk3kphm1iIWKfan9R7RKt4hdq3eQ0kmDoqzudjPYBEXAJ5bUNKeGQ==}
     peerDependencies:
       serverless: 1 || 2 || pre-3 || 3
+
+  serverless-plugin-warmup@8.3.0:
+    resolution: {integrity: sha512-FBPPfY6CFdg/BAbvR+UrgHUFNgkUsQxXApSUVwoBqoaLH7amc2aCUYxYncJaD+kRLHTD4WKB0VC7QuyfUPJ+XQ==}
 
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
@@ -5239,6 +5245,8 @@ snapshots:
       chalk: 4.1.2
       dotenv: 16.4.7
       dotenv-expand: 10.0.0
+
+  serverless-plugin-warmup@8.3.0: {}
 
   setprototypeof@1.2.0: {}
 
