@@ -1,25 +1,26 @@
+# org: nalbam
+app: next-auth-example
 service: next-auth-example
 
 provider:
   name: aws
   # profile:
   region: 'ap-northeast-2'
-  stage: 'dev'
   runtime: nodejs16.x
+  stage: 'dev'
   stackName: ${self:provider.stage}-${self:service}
   apiName: ${self:provider.stage}-${self:service}
   timeout: 25
   memorySize: 2048
   versionFunctions: false
-	apiGateway:
+  apiGateway:
     binaryMediaTypes:
       - '*/*'
-
   tracing:
     apiGateway: true
     lambda: true
   environment:
-    NODE_ENV: production
+    NODE_ENV: dev
     # .env 파일의 내용을 모두 입력해줍니다.
 
 functions:
@@ -40,6 +41,7 @@ package:
 
 plugins:
   - serverless-domain-manager
+  - serverless-dotenv-plugin
 
 custom:
   customDomain:

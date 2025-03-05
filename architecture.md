@@ -117,11 +117,27 @@ docker run -p 3000:3000 next-auth-example
 
 serverless.yml 파일을 사용하여 서버리스 환경에 배포할 수 있습니다.
 
+```bash
+# Serverless 플러그인 설치
+npm i -g serverless
+npm i -g serverless-domain-manager
+
+# 의존성 설치
+pnpm i express
+pnpm i @vendia/serverless-express source-map-support
+
+# Serverless 플러그인 설치
+sls plugin install -n serverless-domain-manager
+sls plugin install -n serverless-dotenv-plugin
+
+# 로컬 개발 서버 실행
+node app-local.js
+
+# Serverless 배포
+npx serverless deploy --region ap-northeast-2 --stage dev
+```
+
 ## 6. 주요 문제 해결
-
-### Next.js 초기화 오류
-
-"prepare() must be called before performing this operation" 오류가 발생하는 경우, Next.js 애플리케이션이 제대로 초기화되지 않은 것입니다. app.js 파일에서 `nextApp.prepare()` 메서드가 호출되었는지 확인하세요.
 
 ## 7. 향후 개선 사항
 
