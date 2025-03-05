@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:20-alpine AS base
+FROM node:23-alpine AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -26,7 +26,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm install -g pnpm && pnpm build
 
 # AWS Lambda 실행을 위한 이미지, 필요한 파일만 복사
-FROM public.ecr.aws/lambda/nodejs:20 AS runner
+FROM public.ecr.aws/lambda/nodejs:23 AS runner
 WORKDIR ${LAMBDA_TASK_ROOT}
 
 ENV NODE_ENV=production
