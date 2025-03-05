@@ -62,7 +62,42 @@ next-auth-example/
 └── .env.local.example      # 환경 변수 예제
 ```
 
-## 3. 서버 설정
+## 3. 이미지 최적화 설정
+
+Next.js의 이미지 최적화 기능을 AWS Lambda 환경에서 사용하기 위해 다음과 같은 설정을 적용했습니다:
+
+### Next.js 이미지 설정 (next.config.js)
+
+```javascript
+module.exports = {
+  output: "standalone",
+  images: {
+    unoptimized: true, // Lambda 환경에서 이미지 최적화 비활성화
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
+}
+```
+
+이 설정의 주요 포인트:
+1. `unoptimized: true`: Lambda 환경에서 이미지 최적화를 비활성화하여 서버리스 환경에서의 호환성 확보
+2. `remotePatterns`: 모든 HTTPS 도메인의 이미지를 허용하도록 설정
+
+### 미들웨어 설정 (middleware.ts)
+
+미들웨어 설정에서 `_next/image` 경로를 제외 목록에서 제거하여 이미지 요청이 정상적으로 처리되도록 수정했습니다:
+
+```typescript
+export const config = {
+  matcher: ["/((?!api|_next/static|favicon.ico).*)"],
+}
+```
+
+## 4. 서버 설정
 
 ### Express 서버 (app.js)
 
