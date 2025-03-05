@@ -845,6 +845,54 @@ npm을 사용하여 패키지를 설치할 때 "Cannot read properties of null (
    pnpm add -D [패키지명]
    ```
 
+### AWS Lambda에서 Docker 이미지 실행 시 'bundle5' 모듈 오류
+
+AWS Lambda에서 Docker 이미지를 실행할 때 다음과 같은 오류가 발생할 경우:
+```
+Error: Cannot find module './bundle5'
+Require stack:
+- /var/task/node_modules/.pnpm/next@15.2.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/webpack/webpack.js
+```
+
+이 문제는 다음과 같은 원인으로 발생할 수 있습니다:
+
+1. **Node.js 버전 불일치**: Dockerfile에서 사용하는 Node.js 버전과 package.json에서 요구하는 버전이 다를 경우 발생할 수 있습니다.
+
+   해결 방법:
+   ```dockerfile
+   # 변경 전
+   FROM node:22-alpine AS base
+   FROM public.ecr.aws/lambda/nodejs:22 AS runner
+
+   # 변경 후
+   FROM node:20-alpine AS base
+   FROM public.ecr.aws/lambda/nodejs:20 AS runner
+   ```
+
+2. **Next.js 버전 문제**: 'latest' 버전을 사용하면 빌드 시점에 따라 다른 버전이 설치될 수 있어 일관성이 떨어집니다.
+
+   해결 방법:
+   ```json
+   // 변경 전
+   "next": "latest",
+
+   // 변경 후
+   "next": "14.1.0",
+   ```
+
+3. **개발 모드 설정 문제**: Lambda 환경에서는 개발 모드가 아닌 프로덕션 모드로 실행해야 합니다.
+
+   해결 방법:
+   ```javascript
+   // 변경 전
+   const dev = true;
+
+   // 변경 후
+   const dev = process.env.NODE_ENV !== 'production';
+   ```
+
+이러한 변경을 통해 Node.js 버전을 일관되게 유지하고, Next.js 버전을 명시적으로 지정하며, 환경에 따라 적절한 모드로 실행되도록 설정하여 문제를 해결할 수 있습니다.
+
 ## 11. 향후 개선 계획
 
 - 추가 인증 제공자 통합 (Twitter, Apple, Microsoft 등)
