@@ -10,10 +10,7 @@ env:
   AWS_REGION: ap-northeast-2
   AWS_ROLE_ARN: "arn:aws:iam::968005369378:role/next-auth-example"
 
-  IMAGE_NAME: nalbam/next-auth-example
   PLATFORM: linux/amd64,linux/arm64
-  BUILDX: "true"
-  PHASE: prod
 
   IMAGE_URI: "968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example"
 
