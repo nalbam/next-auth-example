@@ -38,14 +38,14 @@ functions:
 package:
   individually: true
 
-# plugins:
-#   - serverless-domain-manager
+plugins:
+  - serverless-domain-manager
 
-# custom:
-#   customDomain:
-#     domainName: # 사용할 도메인
-#     basePath: ''
-#     stage: ${self:provider.stage}
-#     createRoute53Record: true
-#     certificateName: # Certification Manager에 등록된 인증서 이름
-#     securityPolicy: tls_1_2
+custom:
+  customDomain:
+    domainName: next-auth.nalbam.com
+    basePath: ''
+    stage: ${self:provider.stage}
+    createRoute53Record: true
+    certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
+    securityPolicy: tls_1_2

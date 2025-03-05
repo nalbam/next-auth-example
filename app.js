@@ -8,8 +8,17 @@ const handle = nextApp.getRequestHandler();
 
 const app = express();
 
-app.all('*', (req, res) => {
-  return handle(req, res);
-});
+// 서버 초기화 함수
+const init = async () => {
+  // Next.js 애플리케이션 초기화
+  await nextApp.prepare();
 
-module.exports = app;
+  app.all('*', (req, res) => {
+    return handle(req, res);
+  });
+
+  return app;
+};
+
+// 초기화 함수 내보내기
+module.exports = init;
