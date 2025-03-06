@@ -8,3 +8,5 @@
   - serverless.yml 수정 (컨테이너 이미지 기반 배포 설정 및 환경 변수 설정)
   - GitHub Actions 워크플로우 수정 (환경 변수 설정)
   - ARCHITECTURE.md 업데이트 (Lambda 배포 관련 내용 추가)
+- Docker 빌드 오류 수정
+  - Dockerfile의 pnpm 설치 옵션 변경 (`--frozen-lockfile`에서 `--no-frozen-lockfile`로 변경하여 패키지 무결성 검사 완화)
