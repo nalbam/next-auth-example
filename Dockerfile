@@ -22,7 +22,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # 필요한 패키지 설치
-RUN npm install -g source-map-support
+RUN npm install -g express @vendia/serverless-express source-map-support
 
 # 빌드된 애플리케이션 복사
 COPY --from=builder /app/public ./public

@@ -34,7 +34,6 @@ provider:
 functions:
   app:
     image: ${self:provider.image}
-    handler: lambda.handler  # Lambda 핸들러 지정
     # events:
     #   - httpApi: '*'
     events:
