@@ -1,6 +1,19 @@
 # 변경 이력
 
 ## 2025-03-06
+- "Endpoint request timed out" 에러 해결 (6차 시도)
+  - lambda.js 수정: 초기화 단계에서 로드하는 모듈 최소화
+  - lambda.js 수정: Express 앱 초기화를 첫 번째 요청으로 지연
+  - lambda.js 수정: serverlessExpress 모듈 동적 로딩 구현
+  - lambda.js 수정: 오류 처리 개선 및 예외 상황 대응
+
+- "Endpoint request timed out" 에러 해결 (5차 시도)
+  - serverless.yml 수정: API Gateway 압축 설정 추가 (minimumCompressionSize: 1024)
+  - serverless.yml 수정: API Gateway 이름 설정 개선 (shouldStartNameWithService: true)
+  - serverless.yml 수정: CORS 설정 상세화 (필요한 헤더 명시적 지정)
+  - serverless.yml 수정: X-Next-Init-Bypass 헤더 허용 (초기화 우회 플래그용)
+  - serverless.yml 수정: X-Ray 트레이싱 활성화
+
 - "Endpoint request timed out" 에러 해결 (4차 시도)
   - lambda.js 수정: Lambda 초기화 단계에서 Next.js 초기화를 완전히 분리
   - lambda.js 수정: 초기화 중 로딩 페이지 추가 (자동 새로고침 기능 포함)

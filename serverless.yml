@@ -13,6 +13,8 @@ provider:
   apiGateway:
     binaryMediaTypes:
       - "*/*"
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true
     apiKeys:
       - name: next-auth-example-key
         description: API key for next-auth-example
@@ -23,9 +25,9 @@ provider:
       throttle:
         burstLimit: 200
         rateLimit: 100
-  # tracing:
-  #   apiGateway: true
-  #   lambda: true
+  tracing:
+    apiGateway: true
+    lambda: true
   environment:
     NODE_ENV: production
   architecture: x86_64
@@ -44,12 +46,32 @@ functions:
     image: ${self:custom.image}
     events:
       - http:
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - X-Next-Init-Bypass
+            allowCredentials: false
           path: "/"
           method: any
           timeout: 30
       - http:
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - X-Next-Init-Bypass
+            allowCredentials: false
           path: "{proxy+}"
           method: any
           timeout: 30
