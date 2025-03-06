@@ -77,36 +77,36 @@ jobs:
       #   with:
       #     node-version: '20'
 
-      - name: Install dependencies 📦
-        run: |
-          npm install --save-dev serverless-dotenv-plugin serverless-plugin-warmup
+      # - name: Install dependencies 📦
+      #   run: |
+      #     npm install --save-dev serverless-dotenv-plugin serverless-plugin-warmup
 
-      - name: Install serverless plugin 📦
-        run: |
-          npx serverless plugin install -n serverless-dotenv-plugin
-          npx serverless plugin install -n serverless-plugin-warmup
+      # - name: Install serverless plugin 📦
+      #   run: |
+      #     npx serverless plugin install -n serverless-dotenv-plugin
+      #     npx serverless plugin install -n serverless-plugin-warmup
 
-      - name: Set up environment variables 📝
-        env:
-          AUTH_FACEBOOK_ID: ${{ secrets.AUTH_FACEBOOK_ID }}
-          AUTH_FACEBOOK_SECRET: ${{ secrets.AUTH_FACEBOOK_SECRET }}
-          AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
-          AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
-          AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
-          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
-          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
-        run: |
-          echo "AUTH_FACEBOOK_ID=${AUTH_FACEBOOK_ID}" >> .env
-          echo "AUTH_FACEBOOK_SECRET=${AUTH_FACEBOOK_SECRET}" >> .env
-          echo "AUTH_GITHUB_ID=${AUTH_GITHUB_ID}" >> .env
-          echo "AUTH_GITHUB_SECRET=${AUTH_GITHUB_SECRET}" >> .env
-          echo "AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}" >> .env
-          echo "AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}" >> .env
-          echo "AUTH_SECRET=${AUTH_SECRET}" >> .env
-          echo "NODE_ENV=${NODE_ENV}" >> .env
+      # - name: Set up environment variables 📝
+      #   env:
+      #     AUTH_FACEBOOK_ID: ${{ secrets.AUTH_FACEBOOK_ID }}
+      #     AUTH_FACEBOOK_SECRET: ${{ secrets.AUTH_FACEBOOK_SECRET }}
+      #     AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
+      #     AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
+      #     AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+      #     AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+      #     AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+      #   run: |
+      #     echo "AUTH_FACEBOOK_ID=${AUTH_FACEBOOK_ID}" >> .env
+      #     echo "AUTH_FACEBOOK_SECRET=${AUTH_FACEBOOK_SECRET}" >> .env
+      #     echo "AUTH_GITHUB_ID=${AUTH_GITHUB_ID}" >> .env
+      #     echo "AUTH_GITHUB_SECRET=${AUTH_GITHUB_SECRET}" >> .env
+      #     echo "AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}" >> .env
+      #     echo "AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}" >> .env
+      #     echo "AUTH_SECRET=${AUTH_SECRET}" >> .env
+      #     echo "NODE_ENV=${NODE_ENV}" >> .env
 
-      - name: Serverless Deploy 🚀
-        run: |
-          npx serverless deploy --region ${{ env.AWS_REGION }}
-        env:
-          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+      # - name: Serverless Deploy 🚀
+      #   run: |
+      #     npx serverless deploy --region ${{ env.AWS_REGION }}
+      #   env:
+      #     SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
