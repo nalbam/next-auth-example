@@ -84,10 +84,11 @@ Lambda 함수와 API Gateway가 이미지를 효율적으로 처리할 수 있�
 ```yaml
 provider:
   timeout: 30          # 이미지 처리를 위해 타임아웃 증가
-  memorySize: 3072     # 이미지 처리를 위해 메모리 증가
+  memorySize: 2048     # 이미지 처리를 위한 충분한 메모리
   apiGateway:
     binaryMediaTypes:
       - '*/*'          # 모든 바이너리 미디어(이미지 포함) 처리
+  image: [ECR_REPOSITORY_URI]:[TAG]  # Docker 이미지 URI
 ```
 
 이 설정의 주요 포인트:
