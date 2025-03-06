@@ -31,6 +31,7 @@ COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
 # Lambda 핸들러 파일 복사
+COPY app.js ./
 COPY lambda.js ./
 
 # 포트 설정
