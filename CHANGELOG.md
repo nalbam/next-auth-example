@@ -8,6 +8,3 @@
   - serverless.yml 수정 (컨테이너 이미지 기반 배포 설정 및 환경 변수 설정)
   - GitHub Actions 워크플로우 수정 (환경 변수 설정)
   - ARCHITECTURE.md 업데이트 (Lambda 배포 관련 내용 추가)
-- Docker 빌드 오류 수정
-  - Dockerfile의 패키지 관리자를 pnpm에서 npm으로 변경
-  - `--no-package-lock` 옵션을 추가하여 패키지 무결성 검사 관련 오류 해결
