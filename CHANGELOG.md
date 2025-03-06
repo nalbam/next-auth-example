@@ -1,6 +1,12 @@
 # 변경 이력
 
 ## 2025-03-06
+- "Endpoint request timed out" 에러 해결 (7차 시도)
+  - Dockerfile 수정: app.js 파일 복사 제거
+  - Dockerfile 수정: 전역 모듈 설치를 로컬 설치로 변경
+  - Dockerfile 수정: source-map-support 패키지 제거
+  - Dockerfile 수정: NODE_PATH 환경 변수 제거
+
 - "Endpoint request timed out" 에러 해결 (6차 시도)
   - lambda.js 수정: 초기화 단계에서 로드하는 모듈 최소화
   - lambda.js 수정: Express 앱 초기화를 첫 번째 요청으로 지연

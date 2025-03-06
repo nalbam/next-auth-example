@@ -50,11 +50,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # AWS Lambda에 필요한 파일 복사
 COPY --from=builder --chown=nextjs:nodejs /app/lambda.js ./
-COPY --from=builder --chown=nextjs:nodejs /app/app.js ./
 
-# AWS Lambda에 필요한 패키지 설치
-ENV NODE_PATH=/usr/local/lib/node_modules
-RUN npm install -g express @vendia/serverless-express source-map-support
+# 필요한 패키지를 로컬에 설치 (전역 설치 대신)
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./
+RUN npm install --production --no-optional express @vendia/serverless-express
 
 USER nextjs
 
@@ -64,5 +63,5 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # AWS Lambda에서는 lambda.handler를 사용하도록 설정
-# 로컬 환경에서는 server.js를 사용
+# 로컬 환경에서는 lambda.js를 직접 실행
 CMD ["node", "lambda.js"]

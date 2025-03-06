@@ -55,9 +55,8 @@ Docker 이미지는 멀티 스테이지 빌드를 사용하여 최적화되어 �
 
 실행 단계에서는 다음과 같은 환경 변수와 설정이 적용됩니다:
 - `NODE_ENV=production`: 프로덕션 모드로 실행
-- `NODE_PATH=/usr/local/lib/node_modules`: 전역 설치된 모듈을 require()로 불러올 수 있도록 설정
 - `NEXT_TELEMETRY_DISABLED=1`: Next.js 텔레메트리 비활성화
-- 필요한 패키지(express, @vendia/serverless-express, source-map-support)를 전역으로 설치
+- 필요한 패키지(express, @vendia/serverless-express)를 로컬에 설치하여 모듈 로딩 최적화
 
 ## AWS Lambda 배포
 
