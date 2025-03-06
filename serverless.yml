@@ -44,19 +44,19 @@ functions:
     warmup:
       enabled: true
 
-plugins:
-  - serverless-dotenv-plugin
-  - serverless-plugin-warmup
-  # - serverless-domain-manager
+# plugins:
+#   - serverless-dotenv-plugin
+#   - serverless-plugin-warmup
+#   # - serverless-domain-manager
 
 custom:
   # Docker 이미지 URI 정의
   image: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
 
-  warmup:
-    enabled: true
-    events:
-      - schedule: rate(5 minutes)
+  # warmup:
+  #   enabled: true
+  #   events:
+  #     - schedule: rate(5 minutes)
 
   # customDomain:
   #   domainName: next-auth.nalbam.com
