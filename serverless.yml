@@ -4,15 +4,15 @@ service: next-auth-example
 
 provider:
   name: aws
-  region: 'ap-northeast-2'
-  stage: 'dev'
+  region: "ap-northeast-2"
+  stage: "dev"
   # stackName: ${self:service}-${self:provider.stage}
   # apiName: ${self:service}-${self:provider.stage}
   timeout: 29
   memorySize: 2048
   apiGateway:
     binaryMediaTypes:
-      - '*/*'
+      - "*/*"
   # tracing:
   #   apiGateway: true
   #   lambda: true
@@ -37,11 +37,11 @@ functions:
     events:
       - http:
           cors: true
-          path: '/'
+          path: "/"
           method: any
       - http:
           cors: true
-          path: '{proxy+}'
+          path: "{proxy+}"
           method: any
     # warmup:
     #   enabled: true
@@ -56,7 +56,7 @@ custom:
   image: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
 #   # customDomain:
 #   #   domainName: next-auth.nalbam.com
-#   #   basePath: ''
+#   #   basePath: ""
 #   #   stage: ${self:provider.stage}
 #   #   createRoute53Record: true
 #   #   certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
