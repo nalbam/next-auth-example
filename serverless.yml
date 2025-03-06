@@ -13,9 +13,9 @@ provider:
   apiGateway:
     binaryMediaTypes:
       - "*/*"
-  tracing:
-    apiGateway: true
-    lambda: true
+  # tracing:
+  #   apiGateway: true
+  #   lambda: true
   environment:
     NODE_ENV: production
   architecture: x86_64
