@@ -14,13 +14,6 @@ env:
 
   ECR_URI: "968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest"
 
-  AUTH_FACEBOOK_ID: ${{ secrets.AUTH_FACEBOOK_ID }}
-  AUTH_FACEBOOK_SECRET: ${{ secrets.AUTH_FACEBOOK_SECRET }}
-  AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
-  AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
-  AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
-  AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
-  AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   NODE_ENV: production
 
 # Permission can be added at job level or workflow level
@@ -84,17 +77,25 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      - name: Install dependencies 📦
         run: |
           npm install
           npm install serverless@3
 
-      - name: Install serverless plugin
+      - name: Install serverless plugin 📦
         run: |
-          serverless plugin install -n serverless-dotenv-plugin
-          serverless plugin install -n serverless-plugin-warmup
+          npx serverless plugin install -n serverless-dotenv-plugin
+          npx serverless plugin install -n serverless-plugin-warmup
 
       - name: Set up environment variables 📝
+        env:
+          AUTH_FACEBOOK_ID: ${{ secrets.AUTH_FACEBOOK_ID }}
+          AUTH_FACEBOOK_SECRET: ${{ secrets.AUTH_FACEBOOK_SECRET }}
+          AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
+          AUTH_GITHUB_SECRET: ${{ secrets.AUTH_GITHUB_SECRET }}
+          AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
         run: |
           echo "AUTH_FACEBOOK_ID=${AUTH_FACEBOOK_ID}" >> .env
           echo "AUTH_FACEBOOK_SECRET=${AUTH_FACEBOOK_SECRET}" >> .env
@@ -106,6 +107,6 @@ jobs:
           echo "NODE_ENV=${NODE_ENV}" >> .env
 
       - name: Serverless Deploy 🚀
-        run: serverless deploy --region ${{ env.AWS_REGION }}
+        run: npx serverless deploy --region ${{ env.AWS_REGION }}
         env:
           ECR_URI: ${{ env.ECR_URI }}
