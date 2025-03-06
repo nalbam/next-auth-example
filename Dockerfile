@@ -38,4 +38,5 @@ COPY lambda.js ./
 EXPOSE 3000
 
 # Lambda 핸들러 실행
-CMD ["node", "-e", "require('./lambda').handler(require('@vendia/serverless-express').createApiGatewayEventV1())"]
+CMD ["node", "lambda.js"]
+# CMD ["node", "-e", "require('./lambda').handler(require('@vendia/serverless-express').createApiGatewayEventV1())"]
