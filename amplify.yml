@@ -8,6 +8,7 @@ frontend:
     build:
       commands:
         - env | grep -e AUTH >> .env.production
+        - echo "NODE_ENV=production" >> .env.production
         - pnpm run build
   artifacts:
     baseDirectory: .next
