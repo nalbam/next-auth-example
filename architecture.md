@@ -2,7 +2,7 @@
 
 ## 1. 애플리케이션 개요
 
-이 애플리케이션은 Next.js와 NextAuth.js(Auth.js)를 사용한 인증 예제 애플리케이션입니다. Express 서버를 통해 Next.js 애플리케이션을 제공하며, 다양한 인증 방식과 보호된 라우트 예제를 포함하고 있습니다. 이 프로젝트는 Next.js의 App Router를 사용하여 구현되었으며, 서버 컴포넌트와 클라이언트 컴포넌트를 모두 활용합니다. AWS Lambda와 Docker를 통한 서버리스 배포를 지원합니다.
+이 애플리케이션은 Next.js 14.1.3과 NextAuth.js(Auth.js)를 사용한 인증 예제 애플리케이션입니다. Express 서버를 통해 Next.js 애플리케이션을 제공하며, 다양한 인증 방식과 보호된 라우트 예제를 포함하고 있습니다. 이 프로젝트는 Next.js의 App Router를 사용하여 구현되었으며, 서버 컴포넌트와 클라이언트 컴포넌트를 모두 활용합니다. AWS Lambda와 Docker를 통한 서버리스 배포를 지원합니다.
 
 ### 주요 기능
 
@@ -147,7 +147,7 @@ const express = require('express');
 const next = require('next');
 const path = require('path');
 
-const dev = true;
+const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 
@@ -465,7 +465,7 @@ provider:
   stage: 'dev'
   # stackName: ${self:service}-${self:provider.stage}
   # apiName: ${self:service}-${self:provider.stage}
-  timeout: 25
+  timeout: 30
   memorySize: 2048
   apiGateway:
     binaryMediaTypes:
@@ -475,10 +475,7 @@ provider:
   #   lambda: true
   environment:
     NODE_ENV: dev
-  ecr:
-    images:
-      app:
-        uri: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
+  image: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
   architecture: x86_64
   iam:
     role:
@@ -492,12 +489,7 @@ provider:
 
 functions:
   app:
-    image:
-      name: app
-      # command:
-      #   - index.handle
-    # events:
-    #   - httpApi: '*'
+    image: ${self:provider.image}
     events:
       - http:
           cors: true
@@ -507,6 +499,8 @@ functions:
           cors: true
           path: '{proxy+}'
           method: any
+    warmup:
+      enabled: true
 
 plugins:
   - serverless-dotenv-plugin
@@ -567,7 +561,7 @@ env:
 
   PLATFORM: linux/amd64 # ,linux/arm64
 
-  IMAGE_URI: "968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example"
+  ECR_URI: "968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest"
 
   AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
   AUTH_GITHUB_ID: ${{ secrets.AUTH_GITHUB_ID }}
@@ -618,7 +612,32 @@ jobs:
           role-session-name: github-actions-ci-bot
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
+      - name: Login to Amazon ECR 🔑
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push 🐳
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ env.PLATFORM }}
+          push: true
+          tags: ${{ env.ECR_URI }}
+          provenance: false  # Docker V2 Schema 2 형식으로 강제 적용 (OCI 형식 비활성화)
+
+      - name: Setup Node.js 🔧
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Serverless Framework 🔧
+        run: npm install -g serverless
+
+      - name: Serverless Deploy 🚀
+        run: serverless deploy
+        env:
+          ECR_URI: ${{ env.ECR_URI }}
+```
 
 ## 8. 자동화된 배포 파이프라인
 
@@ -672,235 +691,4 @@ AWS Lambda에서 실행하기 위한 Dockerfile은 AWS Lambda 컨테이너 이�
 # AWS Lambda 배포용 Docker 이미지 빌드
 docker build -t next-auth-example-lambda .
 
-# ECR 리포지토리에 이미지 푸시 (Docker V2 Schema 2 형식으로 푸시)
-aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com
-docker tag next-auth-example-lambda 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
-docker push 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
-```
-
-#### Docker V2 Schema 2 형식 사용
-
-AWS Lambda는 Docker V2 Schema 2 형식의 이미지를 요구합니다. GitHub Actions에서 이미지를 빌드하고 푸시할 때 다음과 같은 설정을 사용하여 Docker V2 Schema 2 형식을 강제 적용합니다:
-
-```yaml
-- name: Build and push
-  uses: docker/build-push-action@v6
-  with:
-    context: .
-    platforms: linux/amd64
-    tags: "your-ecr-repo:latest"
-    outputs: type=image,push=true
-    provenance: false  # Docker V2 Schema 2 형식으로 강제 적용 (OCI 형식 비활성화)
-```
-
-이 설정의 주요 포인트:
-1. `outputs: type=image,push=true`: 이미지를 빌드하고 푸시하는 방식 지정
-2. `provenance: false`: OCI 형식 대신 Docker V2 Schema 2 형식 사용 강제 적용
-
-Docker V2 Schema 2 형식을 사용하는 이유:
-- AWS Lambda가 OCI 형식이 아닌 Docker V2 Schema 2 형식만 지원
-- 호환성 및 안정성 향상
-- Lambda 함수 배포 시 오류 방지
-
-#### Docker Compose 설정 (docker-compose.yml)
-
-```yaml
-services:
-  authjs-docker-test:
-    build: .
-    environment:
-      - TEST_KEYCLOAK_USERNAME
-      - TEST_KEYCLOAK_PASSWORD
-      - AUTH_KEYCLOAK_ID
-      - AUTH_KEYCLOAK_SECRET
-      - AUTH_KEYCLOAK_ISSUER
-      - AUTH_SECRET="MohY0/2zSQw/psWEnejC2ka3Al0oifvY4YjOkUaFfnI="
-      - AUTH_URL=http://localhost:3000/auth
-    ports:
-      - "3000:3000"
-```
-
-### Serverless 배포
-
-serverless.yml 파일을 사용하여 AWS Lambda에 Docker 이미지로 배포할 수 있습니다:
-
-```yaml
-# serverless.yml
-app: next-auth-example
-service: next-auth-example
-
-provider:
-  name: aws
-  region: 'ap-northeast-2'
-  stage: 'dev'
-  timeout: 25
-  memorySize: 2048
-  environment:
-    NODE_ENV: dev
-    # .env 파일의 내용을 모두 입력해줍니다.
-  ecr:
-    images:
-      app:
-        uri: [ECR_REPOSITORY_URI]:[TAG]
-  architecture: x86_64
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - ecr:GetDownloadUrlForLayer
-            - ecr:BatchGetImage
-            - ecr:BatchCheckLayerAvailability
-          Resource: "*"
-
-functions:
-  app:
-    image:
-      name: app
-    events:
-      - httpApi: '*'
-
-plugins:
-  - serverless-dotenv-plugin
-```
-
-배포 명령어:
-
-```bash
-# 의존성 설치
-pnpm i express
-pnpm i @vendia/serverless-express source-map-support
-pnpm add -D serverless-dotenv-plugin
-
-# Docker 이미지 빌드 및 ECR 푸시
-docker build -t next-auth-example-lambda .
-aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin [AWS_ACCOUNT_ID].dkr.ecr.ap-northeast-2.amazonaws.com
-docker tag next-auth-example-lambda [AWS_ACCOUNT_ID].dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:[TAG]
-docker push [AWS_ACCOUNT_ID].dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:[TAG]
-
-# serverless.yml 파일에서 ECR 이미지 URI 업데이트 후 배포
-npx serverless deploy --region ap-northeast-2 --stage dev
-```
-
-Docker 이미지를 사용하는 AWS Lambda 배포의 장점:
-
-1. 로컬 개발 환경과 배포 환경의 일관성 유지
-2. 의존성 관리 간소화
-3. 배포 패키지 크기 제한 우회 (Lambda 직접 배포 시 50MB 제한)
-4. 복잡한 런타임 환경 지원
-5. 컨테이너 기반 배포로 인한 확장성 향상
-6. AWS Lambda 환경에 최적화된 설정 가능
-
-## 9. 환경 변수 구성
-
-애플리케이션은 다음과 같은 환경 변수를 사용합니다:
-
-```
-# 필수 환경 변수
-AUTH_SECRET=           # 인증 암호화 키 (npx auth secret 또는 openssl rand -hex 32로 생성)
-
-# OAuth 제공자 설정
-AUTH_FACEBOOK_ID=      # Facebook OAuth 클라이언트 ID
-AUTH_FACEBOOK_SECRET=  # Facebook OAuth 클라이언트 시크릿
-
-AUTH_GITHUB_ID=        # GitHub OAuth 클라이언트 ID
-AUTH_GITHUB_SECRET=    # GitHub OAuth 클라이언트 시크릿
-
-AUTH_GOOGLE_ID=        # Google OAuth 클라이언트 ID
-AUTH_GOOGLE_SECRET=    # Google OAuth 클라이언트 시크릿
-
-# 선택적 환경 변수
-AUTH_TRUST_HOST=1      # 프록시 뒤에서 실행할 때 호스트 신뢰 설정
-AUTH_DEBUG=true        # 디버그 모드 활성화
-```
-
-## 10. 문제 해결 가이드
-
-### Docker 빌드 문제
-
-Docker 빌드 중 다음과 같은 오류가 발생할 경우:
-```
-ERROR: failed to solve: process "/bin/sh -c corepack enable pnpm && pnpm i --frozen-lockfile" did not complete successfully
-```
-
-Dockerfile에서 corepack 대신 npm을 통해 pnpm을 직접 설치하도록 변경했습니다:
-```dockerfile
-# 변경 전
-RUN corepack enable pnpm && pnpm i --frozen-lockfile
-
-# 변경 후
-RUN npm install -g pnpm && pnpm i --frozen-lockfile
-```
-
-### npm 설치 오류
-
-npm을 사용하여 패키지를 설치할 때 "Cannot read properties of null (reading 'matches')" 오류가 발생할 경우:
-
-1. npm 캐시를 정리해보세요:
-   ```bash
-   npm cache clean --force
-   ```
-
-2. 그래도 문제가 해결되지 않으면 pnpm을 사용하세요:
-   ```bash
-   pnpm add -D [패키지명]
-   ```
-
-### AWS Lambda에서 Docker 이미지 실행 시 'bundle5' 모듈 오류
-
-AWS Lambda에서 Docker 이미지를 실행할 때 다음과 같은 오류가 발생할 경우:
-```
-Error: Cannot find module './bundle5'
-Require stack:
-- /var/task/node_modules/.pnpm/next@15.2.1_react-dom@18.3.1_react@18.3.1__react@18.3.1/node_modules/next/dist/compiled/webpack/webpack.js
-```
-
-이 문제는 다음과 같은 원인으로 발생할 수 있습니다:
-
-1. **Node.js 버전 불일치**: Dockerfile에서 사용하는 Node.js 버전과 package.json에서 요구하는 버전이 다를 경우 발생할 수 있습니다.
-
-   해결 방법:
-   ```dockerfile
-   # 변경 전
-   FROM node:22-alpine AS base
-   FROM public.ecr.aws/lambda/nodejs:22 AS runner
-
-   # 변경 후
-   FROM node:20-alpine AS base
-   FROM public.ecr.aws/lambda/nodejs:20 AS runner
-   ```
-
-2. **Next.js 버전 문제**: 'latest' 버전을 사용하면 빌드 시점에 따라 다른 버전이 설치될 수 있어 일관성이 떨어집니다.
-
-   해결 방법:
-   ```json
-   // 변경 전
-   "next": "latest",
-
-   // 변경 후
-   "next": "14.1.0",
-   ```
-
-3. **개발 모드 설정 문제**: Lambda 환경에서는 개발 모드가 아닌 프로덕션 모드로 실행해야 합니다.
-
-   해결 방법:
-   ```javascript
-   // 변경 전
-   const dev = true;
-
-   // 변경 후
-   const dev = process.env.NODE_ENV !== 'production';
-   ```
-
-이러한 변경을 통해 Node.js 버전을 일관되게 유지하고, Next.js 버전을 명시적으로 지정하며, 환경에 따라 적절한 모드로 실행되도록 설정하여 문제를 해결할 수 있습니다.
-
-## 11. 향후 개선 계획
-
-- 추가 인증 제공자 통합 (Twitter, Apple, Microsoft 등)
-- 사용자 역할 기반 접근 제어 (RBAC) 구현
-- 다국어 지원 추가
-- 테스트 자동화 (Jest, Playwright)
-- 성능 최적화 및 번들 크기 감소
-- 보안 강화 (CSRF 보호, 속도 제한 등)
-- 사용자 프로필 관리 기능 추가
-- 모니터링 및 로깅 시스템 강화
+# ECR 리포
