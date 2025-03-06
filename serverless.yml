@@ -44,7 +44,7 @@ provider:
 functions:
   app:
     image: ${self:custom.image}
-    handler: lambda.handler
+    # handler: lambda.handler
     events:
       - http:
           cors:
