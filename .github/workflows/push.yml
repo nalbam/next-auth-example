@@ -108,5 +108,3 @@ jobs:
       - name: Serverless Deploy 🚀
         run: |
           npx serverless deploy --region ${{ env.AWS_REGION }}
-        env:
-          ECR_URI: ${{ env.ECR_URI }}
