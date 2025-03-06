@@ -58,6 +58,16 @@ Docker 이미지는 멀티 스테이지 빌드를 사용하여 최적화되어 �
 - `NEXT_TELEMETRY_DISABLED=1`: Next.js 텔레메트리 비활성화
 - 필요한 패키지(express, @vendia/serverless-express)를 로컬에 설치하여 모듈 로딩 최적화
 
+## NextAuth.js 설정
+
+NextAuth.js는 다음과 같은 설정이 적용됩니다:
+
+1. **신뢰할 수 있는 호스트**: `trustHost: true` 설정을 통해 AWS Amplify와 같은 호스팅 서비스의 도메인을 신뢰할 수 있는 호스트로 인식합니다.
+2. **세션 전략**: JWT 기반의 세션 전략을 사용합니다.
+3. **인증 제공자**: Facebook, GitHub, Google 등의 OAuth 제공자를 지원합니다.
+4. **스토리지 어댑터**: Vercel KV 또는 메모리 스토리지를 사용하여 세션 데이터를 관리합니다.
+5. **실험적 기능**: WebAuthn을 활성화하여 생체 인증을 지원합니다.
+
 ## AWS Lambda 배포
 
 AWS Lambda에 배포할 때는 다음과 같은 설정이 적용됩니다:

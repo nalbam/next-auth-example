@@ -1,5 +1,10 @@
 # 변경 이력
 
+## 2025-03-07
+- UntrustedHost 에러 해결
+  - auth.ts 수정: trustHost 옵션을 true로 설정하여 AWS Amplify 도메인 신뢰
+  - ARCHITECTURE.md 업데이트: NextAuth.js 설정 섹션 추가
+
 ## 2025-03-06
 - "Endpoint request timed out" 에러 해결 (9차 시도)
   - Dockerfile 수정: 패키지 설치 권한 문제 해결 (nextjs 사용자로 설치)
