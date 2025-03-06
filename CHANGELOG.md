@@ -1,7 +1,13 @@
 # 변경 이력
 
 ## 2025-03-06
-- "Endpoint request timed out" 에러 해결
+- "Endpoint request timed out" 에러 해결 (2차 시도)
+  - lambda.js 수정: Next.js 애플리케이션 지연 초기화 구현
+  - lambda.js 수정: /health 엔드포인트 추가로 빠른 응답 제공
+  - lambda.js 수정: 백그라운드에서 Next.js 초기화 수행
+  - ARCHITECTURE.md 업데이트: 지연 초기화 설명 추가
+
+- "Endpoint request timed out" 에러 해결 (1차 시도)
   - serverless.yml 수정: Lambda 함수 타임아웃을 29초에서 60초로 증가
   - serverless.yml 수정: Lambda 함수 메모리 크기를 2048MB에서 3072MB로 증가
   - serverless.yml 수정: X-Ray 트레이싱 활성화
