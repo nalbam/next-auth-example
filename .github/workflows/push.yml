@@ -101,10 +101,10 @@ jobs:
       - name: Install dotenv plugin
         run: npx serverless plugin install --name serverless-dotenv-plugin
 
-      # - name: Install warmup plugin
-      #   run: npx serverless plugin install --name serverless-plugin-warmup
+      - name: Install warmup plugin
+        run: npx serverless plugin install --name serverless-plugin-warmup
 
       - name: Serverless Deploy 🚀
-        run: npx serverless deploy --region ${{ env.AWS_REGION }}
+        run: npx serverless deploy --region ${{ env.AWS_REGION }} --disable-io
         env:
           ECR_URI: ${{ env.ECR_URI }}

@@ -1,6 +1,14 @@
 # 변경 이력
 
 ## 2025-03-06
+- "Endpoint request timed out" 에러 해결
+  - serverless.yml 수정: Lambda 함수 타임아웃을 29초에서 60초로 증가
+  - serverless.yml 수정: Lambda 함수 메모리 크기를 2048MB에서 3072MB로 증가
+  - serverless.yml 수정: X-Ray 트레이싱 활성화
+  - serverless.yml 수정: Warm-up 플러그인 활성화 (5분마다 Lambda 함수 호출)
+  - .github/workflows/push.yml 수정: Warm-up 플러그인 설치 단계 활성화
+  - ARCHITECTURE.md 업데이트: AWS Lambda 배포 설정 설명 업데이트
+
 - Docker 빌드 시 pnpm 서명 검증 오류 해결
   - Dockerfile 수정: corepack 대신 npm을 통해 pnpm 설치
   - Dockerfile 수정: pnpm install 명령어에 `--no-verify-store-integrity` 옵션 추가

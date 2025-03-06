@@ -8,14 +8,14 @@ provider:
   stage: "dev"
   # stackName: ${self:service}-${self:provider.stage}
   # apiName: ${self:service}-${self:provider.stage}
-  timeout: 29
-  memorySize: 2048
+  timeout: 60
+  memorySize: 3072
   apiGateway:
     binaryMediaTypes:
       - "*/*"
-  # tracing:
-  #   apiGateway: true
-  #   lambda: true
+  tracing:
+    apiGateway: true
+    lambda: true
   environment:
     NODE_ENV: production
   architecture: x86_64
@@ -41,13 +41,13 @@ functions:
           cors: true
           path: "{proxy+}"
           method: any
-    # warmup:
-    #   enabled: true
+    warmup:
+      enabled: true
 
 plugins:
   - serverless-dotenv-plugin
   # - serverless-domain-manager
-  # - serverless-plugin-warmup
+  - serverless-plugin-warmup
 
 custom:
   # Docker 이미지 URI 정의
@@ -61,7 +61,7 @@ custom:
   #   certificateName: arn:aws:acm:us-east-1:968005369378:certificate/b01e68e2-aaa9-410e-97fa-8f1ed4c18c7d
   #   securityPolicy: tls_1_2
 
-  # warmup:
-  #   enabled: true
-  #   events:
-  #     - schedule: rate(5 minutes)
+  warmup:
+    enabled: true
+    events:
+      - schedule: rate(5 minutes)
