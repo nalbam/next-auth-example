@@ -8,7 +8,7 @@ provider:
   stage: 'dev'
   # stackName: ${self:service}-${self:provider.stage}
   # apiName: ${self:service}-${self:provider.stage}
-  timeout: 30
+  timeout: 29
   memorySize: 2048
   apiGateway:
     binaryMediaTypes:

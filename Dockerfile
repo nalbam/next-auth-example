@@ -20,6 +20,7 @@ WORKDIR /app
 
 # 환경 변수 설정
 ENV NODE_ENV=production
+ENV NODE_PATH=/usr/local/lib/node_modules
 
 # 필요한 패키지 설치
 RUN npm install -g express @vendia/serverless-express source-map-support
