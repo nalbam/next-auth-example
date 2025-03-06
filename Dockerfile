@@ -30,7 +30,7 @@ WORKDIR /app
 
 ENV NODE_ENV production
 # Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -46,6 +46,14 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# AWS Lambda에 필요한 파일 복사
+COPY --from=builder --chown=nextjs:nodejs /app/lambda.js ./
+COPY --from=builder --chown=nextjs:nodejs /app/app.js ./
+
+# AWS Lambda에 필요한 패키지 설치
+ENV NODE_PATH=/usr/local/lib/node_modules
+RUN npm install -g express @vendia/serverless-express source-map-support
+
 USER nextjs
 
 EXPOSE 3000
@@ -53,6 +61,6 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD ["node", "server.js"]
+# AWS Lambda에서는 lambda.handler를 사용하도록 설정
+# 로컬 환경에서는 server.js를 사용
+CMD ["node", "lambda.js"]

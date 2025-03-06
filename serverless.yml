@@ -17,7 +17,12 @@ provider:
   #   apiGateway: true
   #   lambda: true
   environment:
-    NODE_ENV: dev
+    NODE_ENV: production
+    AUTH_SECRET: ${env:AUTH_SECRET}
+    AUTH_GITHUB_ID: ${env:AUTH_GITHUB_ID}
+    AUTH_GITHUB_SECRET: ${env:AUTH_GITHUB_SECRET}
+    AUTH_GOOGLE_ID: ${env:AUTH_GOOGLE_ID}
+    AUTH_GOOGLE_SECRET: ${env:AUTH_GOOGLE_SECRET}
   architecture: x86_64
   iam:
     role:
@@ -32,8 +37,6 @@ provider:
 functions:
   app:
     image: ${self:custom.image}
-    # events:
-    #   - httpApi: '*'
     events:
       - http:
           cors: true

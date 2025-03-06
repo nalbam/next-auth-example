@@ -88,9 +88,7 @@ jobs:
           echo "AUTH_GITHUB_SECRET=${AUTH_GITHUB_SECRET}" >> .env
           echo "AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}" >> .env
           echo "AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}" >> .env
-
-      # - name: Install Serverless Framework 🔧
-      #   run: npm install -g serverless
+          echo "NODE_ENV=production" >> .env
 
       - name: Install dependencies
         run: npm install
@@ -105,3 +103,8 @@ jobs:
         run: npx serverless deploy --region ${{ env.AWS_REGION }}
         env:
           ECR_URI: ${{ env.ECR_URI }}
+          AUTH_SECRET: ${{ env.AUTH_SECRET }}
+          AUTH_GITHUB_ID: ${{ env.AUTH_GITHUB_ID }}
+          AUTH_GITHUB_SECRET: ${{ env.AUTH_GITHUB_SECRET }}
+          AUTH_GOOGLE_ID: ${{ env.AUTH_GOOGLE_ID }}
+          AUTH_GOOGLE_SECRET: ${{ env.AUTH_GOOGLE_SECRET }}
