@@ -77,15 +77,14 @@ jobs:
       #   with:
       #     node-version: '20'
 
-      - name: Install dependencies 📦
-        run: |
-          npm install serverless@3
-          npm install
-
-      # - name: Install serverless plugin 📦
+      # - name: Install dependencies 📦
       #   run: |
-      #     npx serverless plugin install -n serverless-dotenv-plugin
-      #     npx serverless plugin install -n serverless-plugin-warmup
+      #     npm install
+
+      - name: Install serverless plugin 📦
+        run: |
+          npx serverless plugin install -n serverless-dotenv-plugin
+          npx serverless plugin install -n serverless-plugin-warmup
 
       - name: Set up environment variables 📝
         env:
@@ -108,8 +107,6 @@ jobs:
 
       - name: Serverless Deploy 🚀
         run: |
-          npx serverless plugin install -n serverless-dotenv-plugin
-          npx serverless plugin install -n serverless-plugin-warmup
           npx serverless deploy --region ${{ env.AWS_REGION }}
         env:
           ECR_URI: ${{ env.ECR_URI }}
