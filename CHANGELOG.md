@@ -1,6 +1,9 @@
 # 변경 이력
 
 ## 2025-03-07
+- MissingSecret 에러 해결
+  - ARCHITECTURE.md 업데이트: AUTH_SECRET 환경 변수 설정 방법 추가
+
 - UntrustedHost 에러 해결
   - auth.ts 수정: trustHost 옵션을 true로 설정하여 AWS Amplify 도메인 신뢰
   - ARCHITECTURE.md 업데이트: NextAuth.js 설정 섹션 추가
