@@ -13,6 +13,16 @@ provider:
   apiGateway:
     binaryMediaTypes:
       - "*/*"
+    apiKeys:
+      - name: next-auth-example-key
+        description: API key for next-auth-example
+    usagePlan:
+      quota:
+        limit: 5000
+        period: MONTH
+      throttle:
+        burstLimit: 200
+        rateLimit: 100
   # tracing:
   #   apiGateway: true
   #   lambda: true
@@ -37,10 +47,12 @@ functions:
           cors: true
           path: "/"
           method: any
+          timeout: 30
       - http:
           cors: true
           path: "{proxy+}"
           method: any
+          timeout: 30
     warmup:
       enabled: true
 

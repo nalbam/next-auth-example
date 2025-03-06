@@ -1,6 +1,16 @@
 # 변경 이력
 
 ## 2025-03-06
+- "Endpoint request timed out" 에러 해결 (4차 시도)
+  - lambda.js 수정: Lambda 초기화 단계에서 Next.js 초기화를 완전히 분리
+  - lambda.js 수정: 초기화 중 로딩 페이지 추가 (자동 새로고침 기능 포함)
+  - lambda.js 수정: 정적 파일 처리 미들웨어 추가 (Next.js 초기화 전에도 정적 파일 제공)
+  - lambda.js 수정: 상태 확인 엔드포인트 개선 (Next.js 초기화 상태 표시)
+
+- "Endpoint request timed out" 에러 해결 (3차 시도)
+  - serverless.yml 수정: API Gateway 타임아웃을 30초(최대값)로 설정
+  - serverless.yml 수정: API 키 및 사용량 계획 추가
+
 - "Endpoint request timed out" 에러 해결 (2차 시도)
   - lambda.js 수정: Next.js 애플리케이션 지연 초기화 구현
   - lambda.js 수정: /health 엔드포인트 추가로 빠른 응답 제공
