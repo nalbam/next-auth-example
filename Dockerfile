@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json pnpm-lock.yaml* ./
-RUN corepack enable pnpm && pnpm i --frozen-lockfile --no-verify-store-integrity
+RUN npm install -g pnpm && pnpm i --frozen-lockfile --no-verify-store-integrity
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -22,7 +22,7 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN corepack enable pnpm && pnpm build --no-verify-store-integrity
+RUN npm install -g pnpm && pnpm build --no-verify-store-integrity
 
 # Production image, copy all the files and run next
 FROM base AS runner
