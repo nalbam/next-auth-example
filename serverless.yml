@@ -18,8 +18,6 @@ provider:
   #   lambda: true
   environment:
     NODE_ENV: dev
-  # Docker 이미지 URI를 직접 지정
-  image: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
   architecture: x86_64
   iam:
     role:
@@ -33,7 +31,7 @@ provider:
 
 functions:
   app:
-    image: ${self:provider.image}
+    image: ${self:custom.image}
     # events:
     #   - httpApi: '*'
     events:
@@ -53,7 +51,9 @@ plugins:
   # - serverless-domain-manager
   # - serverless-plugin-warmup
 
-# custom:
+custom:
+  # Docker 이미지 URI 정의
+  image: 968005369378.dkr.ecr.ap-northeast-2.amazonaws.com/nalbam/next-auth-example:latest
 #   # customDomain:
 #   #   domainName: next-auth.nalbam.com
 #   #   basePath: ''
