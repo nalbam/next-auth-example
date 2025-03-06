@@ -31,26 +31,26 @@ jobs:
         with:
           fetch-depth: 0
 
-      # - name: Bump Version 🏷️
-      #   id: bump
-      #   uses: opspresso/action-builder@master
-      #   with:
-      #     args: --version
+      - name: Bump Version 🏷️
+        id: bump
+        uses: opspresso/action-builder@master
+        with:
+          args: --version
 
-      # - name: Release Version 🚀
-      #   uses: opspresso/action-builder@master
-      #   with:
-      #     args: --release
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     TAG_NAME: ${{ steps.bump.outputs.version }}
+      - name: Release Version 🚀
+        uses: opspresso/action-builder@master
+        with:
+          args: --release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.bump.outputs.version }}
 
-      # - name: Set up QEMU 🐳
-      #   uses: docker/setup-qemu-action@v3
+      - name: Set up QEMU 🐳
+        uses: docker/setup-qemu-action@v3
 
-      # - name: Set up Docker Buildx 🐳
-      #   id: buildx
-      #   uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx 🐳
+        id: buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Configure AWS Credentials 🔑
         uses: aws-actions/configure-aws-credentials@v4
@@ -59,18 +59,18 @@ jobs:
           role-session-name: github-actions-ci-bot
           aws-region: ${{ env.AWS_REGION }}
 
-      # - name: Login to Amazon ECR 🔑
-      #   id: login-ecr
-      #   uses: aws-actions/amazon-ecr-login@v2
+      - name: Login to Amazon ECR 🔑
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-      # - name: Build and push 🐳
-      #   uses: docker/build-push-action@v6
-      #   with:
-      #     context: .
-      #     platforms: ${{ env.PLATFORM }}
-      #     push: true
-      #     tags: ${{ env.ECR_URI }}
-      #     provenance: false  # Docker V2 Schema 2 형식으로 강제 적용 (OCI 형식 비활성화)
+      - name: Build and push 🐳
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ env.PLATFORM }}
+          push: true
+          tags: ${{ env.ECR_URI }}
+          provenance: false  # Docker V2 Schema 2 형식으로 강제 적용 (OCI 형식 비활성화)
 
       # - name: Setup Node.js 🔧
       #   uses: actions/setup-node@v3
@@ -81,10 +81,10 @@ jobs:
       #   run: |
       #     npm install
 
-      # - name: Install serverless plugin 📦
-      #   run: |
-      #     npx serverless plugin install -n serverless-dotenv-plugin
-      #     npx serverless plugin install -n serverless-plugin-warmup
+      - name: Install serverless plugin 📦
+        run: |
+          npx serverless plugin install -n serverless-dotenv-plugin
+          npx serverless plugin install -n serverless-plugin-warmup
 
       - name: Set up environment variables 📝
         env:
