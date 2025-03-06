@@ -6,6 +6,8 @@
   - lambda.js 수정: /health 엔드포인트 추가로 빠른 응답 제공
   - lambda.js 수정: 백그라운드에서 Next.js 초기화 수행
   - ARCHITECTURE.md 업데이트: 지연 초기화 설명 추가
+  - package.json 업데이트: serverless-dotenv-plugin 및 serverless-plugin-warmup 설치
+  - .github/workflows/push.yml 수정: Node.js 설정 및 의존성 설치 단계 활성화
 
 - "Endpoint request timed out" 에러 해결 (1차 시도)
   - serverless.yml 수정: Lambda 함수 타임아웃을 29초에서 60초로 증가

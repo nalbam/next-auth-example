@@ -72,14 +72,15 @@ jobs:
           tags: ${{ env.ECR_URI }}
           provenance: false  # Docker V2 Schema 2 형식으로 강제 적용 (OCI 형식 비활성화)
 
-      # - name: Setup Node.js 🔧
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: '20'
+      - name: Setup Node.js 🔧
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-      # - name: Install dependencies 📦
-      #   run: |
-      #     npm install
+      - name: Install dependencies 📦
+        run: |
+          npm install
+          npm install --save-dev serverless-dotenv-plugin serverless-plugin-warmup
 
       - name: Install serverless plugin 📦
         run: |
