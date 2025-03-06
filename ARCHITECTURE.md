@@ -32,6 +32,18 @@ graph TD
    - Docker 이미지 빌드
    - AWS ECR에 이미지 푸시
    - Serverless Framework를 사용하여 AWS Lambda에 배포
+   - AWS Amplify를 통한 정적 웹 호스팅 배포
+
+## AWS Amplify 배포
+
+AWS Amplify를 통한 배포시에는 다음과 같은 설정이 적용됩니다:
+
+1. **빌드 설정**: amplify.yml 파일을 통해 빌드 프로세스를 정의합니다.
+   - pnpm을 패키지 매니저로 사용
+   - 환경 변수 설정 (.env.production)
+   - Next.js 애플리케이션 빌드
+2. **아티팩트**: .next 디렉토리의 모든 파일이 배포됩니다.
+3. **캐시**: 빌드 성능 향상을 위해 .next/cache와 node_modules를 캐시합니다.
 
 ## 애플리케이션 구조
 
