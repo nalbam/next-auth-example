@@ -51,13 +51,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 # AWS Lambda에 필요한 파일 복사
 COPY --from=builder --chown=nextjs:nodejs /app/lambda.js ./
 
-# 필요한 패키지를 로컬에 설치 (전역 설치 대신)
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./
+# AWS Lambda에 필요한 패키지 설치
+ENV NODE_PATH=/usr/local/lib/node_modules
+RUN npm install -g express @vendia/serverless-express source-map-support
 
 USER nextjs
-
-# 사용자 권한으로 패키지 설치
-RUN npm install --production --no-optional --no-fund --no-audit
 
 EXPOSE 3000
 
