@@ -8,6 +8,7 @@ frontend:
     build:
       commands:
         - env | grep -e AUTH >> .env
+        - env | grep -e AUTH >> .env.local
         - pnpm run build
   artifacts:
     baseDirectory: .next
