@@ -1,13 +1,19 @@
+version: '3'
+
 services:
-  authjs-docker-test:
-    build: .
-    environment:
-      - TEST_KEYCLOAK_USERNAME
-      - TEST_KEYCLOAK_PASSWORD
-      - AUTH_KEYCLOAK_ID
-      - AUTH_KEYCLOAK_SECRET
-      - AUTH_KEYCLOAK_ISSUER
-      - AUTH_SECRET="MohY0/2zSQw/psWEnejC2ka3Al0oifvY4YjOkUaFfnI="
-      - AUTH_URL=http://localhost:3000/auth
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_GITHUB_ID=${AUTH_GITHUB_ID}
+      - AUTH_GITHUB_SECRET=${AUTH_GITHUB_SECRET}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+    volumes:
+      - ./public:/app/public
+    restart: unless-stopped
