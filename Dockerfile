@@ -7,8 +7,8 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Install corepack
-RUN apk add --no-cache corepack
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install dependencies
 COPY package.json pnpm-lock.yaml* ./
