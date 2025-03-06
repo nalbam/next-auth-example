@@ -79,8 +79,8 @@ jobs:
 
       - name: Install dependencies 📦
         run: |
-          npm install
           npm install serverless@3
+          npm install
 
       # - name: Install serverless plugin 📦
       #   run: |
