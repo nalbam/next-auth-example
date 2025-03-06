@@ -85,6 +85,6 @@ jobs:
         run: npm install -g serverless
 
       - name: Serverless Deploy 🚀
-        run: serverless deploy
+        run: npx serverless deploy --region ${{ env.AWS_REGION }}
         env:
           ECR_URI: ${{ env.ECR_URI }}
