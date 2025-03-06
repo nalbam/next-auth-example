@@ -1,6 +1,15 @@
 # 변경 이력
 
 ## 2025-03-06
+- "Endpoint request timed out" 에러 해결 (9차 시도)
+  - Dockerfile 수정: 패키지 설치 권한 문제 해결 (nextjs 사용자로 설치)
+  - Dockerfile 수정: npm install 옵션 최적화 (--no-fund --no-audit 추가)
+  - Dockerfile 수정: 패키지 설치 방식 변경 (package.json 의존성 사용)
+
+- "Endpoint request timed out" 에러 해결 (8차 시도)
+  - Dockerfile 수정: ENTRYPOINT와 CMD 지시문 분리
+  - serverless.yml 수정: Lambda 함수의 핸들러를 명시적으로 지정 (lambda.handler)
+
 - "Endpoint request timed out" 에러 해결 (7차 시도)
   - Dockerfile 수정: app.js 파일 복사 제거
   - Dockerfile 수정: 전역 모듈 설치를 로컬 설치로 변경

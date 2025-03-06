@@ -53,9 +53,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/lambda.js ./
 
 # 필요한 패키지를 로컬에 설치 (전역 설치 대신)
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./
-RUN npm install --production --no-optional express @vendia/serverless-express
 
 USER nextjs
+
+# 사용자 권한으로 패키지 설치
+RUN npm install --production --no-optional --no-fund --no-audit
 
 EXPOSE 3000
 
@@ -64,4 +66,5 @@ ENV HOSTNAME="0.0.0.0"
 
 # AWS Lambda에서는 lambda.handler를 사용하도록 설정
 # 로컬 환경에서는 lambda.js를 직접 실행
-CMD ["node", "lambda.js"]
+ENTRYPOINT ["node"]
+CMD ["lambda.js"]

@@ -83,4 +83,4 @@ AWS Lambda에 배포할 때는 다음과 같은 설정이 적용됩니다:
 1. **로컬 개발 모드**: `npm run dev` 또는 `docker-compose up`으로 실행하면 Next.js 개발 서버가 시작됩니다.
 2. **Lambda 모드**: AWS Lambda에 배포되면 `lambda.js`의 핸들러 함수가 API Gateway 요청을 처리합니다.
 
-Docker 이미지는 기본적으로 Lambda 모드로 실행되도록 설정되어 있으며, CMD 지시문에서 `lambda.js`를 실행합니다.
+Docker 이미지는 기본적으로 Lambda 모드로 실행되도록 설정되어 있으며, ENTRYPOINT와 CMD 지시문을 분리하여 AWS Lambda 환경에서 `lambda.handler` 함수가 호출되도록 설정되어 있습니다. serverless.yml 파일에서도 Lambda 함수의 핸들러를 명시적으로 지정하여 API Gateway와 Lambda 함수 간의 연결을 보장합니다.
